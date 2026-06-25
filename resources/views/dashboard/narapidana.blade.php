@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-bold text-2xl md:text-3xl text-blue-900 leading-tight">
-            Dashboard {{ Auth::user()->nama }}
+            Dashboard, Selamat Datang {{ Auth::user()->nama }}!
         </h2>
     </x-slot>
 
@@ -53,24 +53,48 @@
                 </div>
             </div>
 
-            <!-- BLOK 2: PETA KALENDER -->
+            <!-- BLOK 2: PETA KALENDER DENGAN FILTER TAHUN -->
             <div class="bg-white overflow-hidden shadow rounded-xl border border-gray-100">
-                <div class="bg-blue-50 px-6 py-5 border-b border-blue-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <!-- Header Kalender: Diatur agar judul di kiri, filter di kanan, dan tidak tabrakan di HP -->
+                <div class="bg-blue-50 px-6 py-5 border-b border-blue-100 flex flex-col xl:flex-row xl:items-center justify-between gap-5">
+
                     <h3 class="text-xl font-bold text-blue-900 flex items-center">
-                        <!-- Icon SVG: Calendar -->
-                        <svg class="w-7 h-7 mr-3 text-blue-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <svg class="w-7 h-7 mr-3 text-blue-700 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                         </svg>
                         Kalender Kegiatan Absensi/Laporan Wajib
                     </h3>
-                    <span class="text-sm text-yellow-800 font-semibold bg-yellow-100 px-3 py-1.5 rounded-md border border-yellow-200">
-                        Geser tabel ke kiri/kanan &rarr;
-                    </span>
+
+                    <!-- Kumpulan Opsi Kanan (Dropdown & Info Geser) -->
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+
+                        <!-- Form Filter Tahun -->
+                        <form method="GET" action="{{ route('dashboard.narapidana') }}" class="w-full sm:w-auto m-0 flex items-center bg-white rounded-md shadow-sm border border-blue-300 overflow-hidden">
+                            <label for="yearFilter" class="sr-only">Pilih Tahun</label>
+                            <!-- Ikon Filter Mungil -->
+                            <div class="px-2 py-2 bg-blue-50 border-r border-blue-200 text-blue-800 flex items-center justify-center">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                            </div>
+                            <!-- Dropdown dengan padding pr-8 agar panah tidak menabrak teks -->
+                            <select id="yearFilter" name="year" onchange="this.form.submit()" class="block w-full border-0 text-sm font-bold text-blue-900 focus:ring-0 cursor-pointer py-2 pl-3 pr-8">
+                                @foreach($availableYears as $year)
+                                    <option value="{{ $year }}" {{ $selectedYear == $year ? 'selected' : '' }}>Tahun {{ $year }}</option>
+                                @endforeach
+                            </select>
+                        </form>
+
+                        <span class="text-sm text-yellow-800 font-semibold bg-yellow-100 px-3 py-2.5 rounded-md border border-yellow-200 text-center w-full sm:w-auto">
+                            Geser tabel ke kiri/kanan &rarr;
+                        </span>
+                    </div>
+
                 </div>
 
                 @php
                     $bulans = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-                    $currentYear = date('Y');
+
+                    // Gunakan tahun dari Controller, bukan hardcode date('Y')
+                    $currentYear = $selectedYear;
 
                     $absensiMap = [];
                     foreach($riwayat as $rekam) {
@@ -84,6 +108,7 @@
                         <div class="flex space-x-4 min-w-max px-1">
                             @for($m = 1; $m <= 12; $m++)
                                 <div class="border-2 border-gray-100 rounded-xl p-4 bg-white shadow-sm w-64 shrink-0 snap-start">
+                                    <!-- Menambahkan keterangan Tahun di sebelah nama Bulan -->
                                     <h4 class="text-center font-bold text-base text-gray-800 mb-4 border-b pb-2">
                                         {{ $bulans[$m-1] }} ({{ $currentYear }})
                                     </h4>
@@ -110,13 +135,12 @@
 
             <!-- BLOK 3: TABEL LOGBOOK -->
             <div class="bg-white overflow-hidden shadow rounded-xl border border-gray-100">
-                <div class="bg-blue-50 px-6 py-5 border-b border-blue-100">
+                <div class="bg-blue-50 px-6 py-5 border-b border-blue-100 flex items-center justify-between">
                     <h3 class="text-xl font-bold text-blue-900 flex items-center">
-                        <!-- Icon SVG: Clipboard/List -->
                         <svg class="w-7 h-7 mr-3 text-blue-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
                         </svg>
-                        Riwayat Absensi/Laporan Wajib Saya
+                        Riwayat Absensi/Laporan Wajib ({{ $selectedYear }})
                     </h3>
                 </div>
 
@@ -153,7 +177,7 @@
                             @empty
                                 <tr>
                                     <td colspan="4" class="px-6 py-10 text-center text-gray-500 font-medium text-lg">
-                                        Belum ada riwayat kegiatan. <br> Silakan buat laporan baru melalui formulir di atas.
+                                        Belum ada riwayat kegiatan di tahun {{ $selectedYear }}. <br> Silakan buat laporan baru melalui formulir di atas.
                                     </td>
                                 </tr>
                             @endforelse

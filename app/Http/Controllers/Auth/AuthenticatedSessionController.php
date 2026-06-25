@@ -27,15 +27,16 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
         $request->session()->regenerate();
 
-        // Ambil role user yang baru saja login
         $role = $request->user()->role;
+        $pesanSukses = 'Login berhasil! Selamat datang kembali, ' . $request->user()->nama . '.';
 
-        // Arahkan sesuai role
-        if ($role === 'admin' || $role === 'pengawas') {
-            return redirect()->intended('/petugas/dashboard');
+        if ($role === 'admin') {
+            return redirect()->intended(route('dashboard.admin', absolute: false))->with('success', $pesanSukses);
+        } elseif ($role === 'pengawas') {
+            return redirect()->intended(route('dashboard.pengawas', absolute: false))->with('success', $pesanSukses);
         }
 
-        return redirect()->intended('/narapidana/dashboard');
+        return redirect()->intended(route('dashboard.narapidana', absolute: false))->with('success', $pesanSukses);
     }
 
     /**

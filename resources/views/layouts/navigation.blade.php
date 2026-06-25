@@ -1,8 +1,8 @@
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
     @php
         if (Auth::user()->role === 'admin' || Auth::user()->role === 'pengawas') {
-            $urlDashboard = route('dashboard.petugas');
-            $isDashboardActive = request()->routeIs('dashboard.petugas');
+            $urlDashboard = route('dashboard.pengawas');
+            $isDashboardActive = request()->routeIs('dashboard.pengawas');
         } else {
             $urlDashboard = route('dashboard.narapidana');
             $isDashboardActive = request()->routeIs('dashboard.narapidana');

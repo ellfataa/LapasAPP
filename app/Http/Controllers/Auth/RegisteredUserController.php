@@ -1,33 +1,4 @@
-<?php
-
-namespace App\Http\Controllers\Auth;
-
-use App\Http\Controllers\Controller;
-use App\Models\User;
-use Illuminate\Auth\Events\Registered;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
-use Illuminate\View\View;
-
-class RegisteredUserController extends Controller
-{
-    /**
-     * Display the registration view.
-     */
-    public function create(): View
-    {
-        return view('auth.register');
-    }
-
-    /**
-     * Handle an incoming registration request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
-     */
-    public function store(Request $request): RedirectResponse
+public function store(Request $request): RedirectResponse
     {
         // 1. Validasi Input
         $request->validate([
@@ -49,14 +20,6 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
-        // 3. Login otomatis setelah register
-        Auth::login($user);
-
-        // 4. Arahkan ke dashboard sesuai role
-        if ($user->role === 'admin' || $user->role === 'pengawas') {
-            return redirect('/petugas/dashboard');
-        }
-
-        return redirect('/narapidana/dashboard');
+        // 3. JANGAN auto-login. Langsung lempar ke halaman login dengan pesan sukses.
+        return redirect()->route('login')->with('success', 'Registrasi akun berhasil! Silakan Login menggunakan Identitas dan Password Anda.');
     }
-}
