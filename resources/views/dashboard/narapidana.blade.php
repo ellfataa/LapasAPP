@@ -5,16 +5,9 @@
         </h2>
     </x-slot>
 
-    <div class="py-6 sm:py-10 bg-slate-50 min-h-screen" x-data="{ showModal: false, imgSrc: '' }">
+    <!-- Menambahkan state 'showAlert' yang otomatis true jika ada session success atau error validasi -->
+    <div class="py-6 sm:py-10 bg-white min-h-screen" x-data="{ showModal: false, imgSrc: '', showAlert: {{ session('success') || $errors->any() ? 'true' : 'false' }} }">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-
-            <!-- Alert Success -->
-            @if(session('success'))
-                <div class="p-4 mb-2 text-base text-blue-900 rounded-lg bg-blue-100 border-l-4 border-blue-500 shadow-sm flex items-center" role="alert">
-                    <svg class="w-6 h-6 mr-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                    <span class="font-bold">Berhasil!</span>&nbsp;{{ session('success') }}
-                </div>
-            @endif
 
             <!-- BLOK 1: FORM INPUT ABSENSI -->
             <div class="bg-white overflow-hidden shadow rounded-xl border border-gray-100">
@@ -24,7 +17,7 @@
                         <svg class="w-7 h-7 mr-3 text-blue-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                         </svg>
-                        Buat Laporan Baru
+                        Buat Absensi/Laporan Wajib Baru
                     </h3>
                 </div>
 
@@ -35,22 +28,19 @@
                             <div>
                                 <label for="tanggal" class="block text-base font-bold text-gray-800 mb-2">Tanggal Kegiatan</label>
                                 <input id="tanggal" name="tanggal" type="date" class="block w-full px-4 py-3 text-base border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg shadow-sm" required max="{{ date('Y-m-d') }}" value="{{ old('tanggal', date('Y-m-d')) }}" />
-                                <x-input-error class="mt-2 text-sm" :messages="$errors->get('tanggal')" />
                             </div>
 
                             <div>
                                 <label for="jenis_kegiatan" class="block text-base font-bold text-gray-800 mb-2">Nama Kegiatan</label>
                                 <input id="jenis_kegiatan" name="jenis_kegiatan" type="text" class="block w-full px-4 py-3 text-base border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg shadow-sm" required placeholder="Contoh: Membersihkan selokan" value="{{ old('jenis_kegiatan') }}" />
-                                <x-input-error class="mt-2 text-sm" :messages="$errors->get('jenis_kegiatan')" />
                             </div>
                         </div>
 
                         <div class="mt-6">
-                            <label for="bukti_file" class="block text-base font-bold text-gray-800 mb-2">Unggah Bukti Foto (Maksimal 2MB)</label>
+                            <label for="bukti_file" class="block text-base font-bold text-gray-800 mb-2">Unggah Bukti Foto (Maksimal 10MB)</label>
                             <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50 hover:bg-blue-50 transition-colors">
                                 <input id="bukti_file" name="bukti_file" type="file" class="block w-full text-base text-gray-700 file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-base file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer" accept="image/jpeg, image/png, image/jpg" required />
                             </div>
-                            <x-input-error class="mt-2 text-sm" :messages="$errors->get('bukti_file')" />
                         </div>
 
                         <div class="mt-8">
@@ -71,7 +61,7 @@
                         <svg class="w-7 h-7 mr-3 text-blue-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                         </svg>
-                        Kalender Kegiatan Laporan
+                        Kalender Kegiatan Absensi/Laporan Wajib
                     </h3>
                     <span class="text-sm text-yellow-800 font-semibold bg-yellow-100 px-3 py-1.5 rounded-md border border-yellow-200">
                         Geser tabel ke kiri/kanan &rarr;
@@ -94,7 +84,6 @@
                         <div class="flex space-x-4 min-w-max px-1">
                             @for($m = 1; $m <= 12; $m++)
                                 <div class="border-2 border-gray-100 rounded-xl p-4 bg-white shadow-sm w-64 shrink-0 snap-start">
-                                    <!-- Menambahkan keterangan Tahun di sebelah nama Bulan -->
                                     <h4 class="text-center font-bold text-base text-gray-800 mb-4 border-b pb-2">
                                         {{ $bulans[$m-1] }} ({{ $currentYear }})
                                     </h4>
@@ -127,7 +116,7 @@
                         <svg class="w-7 h-7 mr-3 text-blue-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
                         </svg>
-                        Riwayat Laporan Saya
+                        Riwayat Absensi/Laporan Wajib Saya
                     </h3>
                 </div>
 
@@ -175,11 +164,9 @@
 
         </div>
 
-        <!-- MODAL POP-UP GAMBAR -->
+        <!-- MODAL POP-UP GAMBAR FOTO -->
         <div x-show="showModal" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-90 backdrop-blur-sm px-4 transition-opacity" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
-
             <div @click="showModal = false" class="absolute inset-0 cursor-pointer"></div>
-
             <div class="relative z-10 w-full max-w-3xl flex justify-center flex-col items-center">
                 <button @click="showModal = false" class="mb-4 bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-full font-bold shadow-lg flex items-center transition-colors focus:outline-none focus:ring-4 focus:ring-red-300">
                     <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -187,10 +174,43 @@
                     </svg>
                     Tutup Foto
                 </button>
-
                 <img :src="imgSrc" class="max-w-full max-h-[75vh] rounded-xl shadow-2xl object-contain border-4 border-white bg-white">
             </div>
         </div>
+
+        <!-- MODAL POP-UP NOTIFIKASI (Berhasil / Gagal) -->
+        <div x-show="showAlert" style="display: none;" class="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900 bg-opacity-60 backdrop-blur-sm px-4 transition-opacity" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+            <div @click="showAlert = false" class="absolute inset-0 cursor-pointer"></div>
+            <div class="relative z-10 w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 md:p-8 text-center transform transition-all" x-transition:enter="ease-out duration-300 delay-100" x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100">
+
+                @if(session('success'))
+                    <!-- Tampilan Jika Sukses -->
+                    <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-green-100 mb-5">
+                        <svg class="h-10 w-10 text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Berhasil!</h3>
+                    <p class="text-base text-gray-600 mb-6">{{ session('success') }}</p>
+                @elseif($errors->any())
+                    <!-- Tampilan Jika Gagal/Error -->
+                    <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-red-100 mb-5">
+                        <svg class="h-10 w-10 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Mohon Maaf, Gagal!</h3>
+                    <div class="text-sm text-red-700 text-left bg-red-50 p-4 rounded-lg mb-6 border border-red-100">
+                        <ul class="list-disc list-inside space-y-1">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <button @click="showAlert = false" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-300 transition-colors shadow-md">
+                    Tutup Peringatan
+                </button>
+            </div>
+        </div>
+
     </div>
 </x-app-layout>
 

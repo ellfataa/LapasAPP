@@ -74,7 +74,7 @@ class AbsensiController extends Controller
         $request->validate([
             'tanggal'        => ['required', 'date', 'before_or_equal:today'],
             'jenis_kegiatan' => ['required', 'string', 'max:255'],
-            'bukti_file'     => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
+            'bukti_file'     => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:10240'],
         ]);
 
         $dataToUpdate = [
