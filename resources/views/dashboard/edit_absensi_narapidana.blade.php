@@ -1,108 +1,130 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-bold text-2xl md:text-3xl text-blue-900 leading-tight flex items-center">
-            <!-- Icon SVG: Pencil/Edit -->
-            <svg class="w-8 h-8 mr-3 text-blue-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-            </svg>
-            {{ __('Edit Data Laporan') }}
-        </h2>
+        <div class="bapas-narapidana-header flex items-center gap-4 bg-slate-100">
+            <div class="hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-900 text-white shadow-sm sm:flex">
+                <!-- Icon SVG: Pencil/Edit -->
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+            </div>
+
+            <h2 class="text-xl font-bold leading-tight tracking-tight text-slate-900 sm:text-2xl md:text-3xl">
+                {{ __('Edit Data Laporan') }}
+            </h2>
+        </div>
     </x-slot>
 
     <!-- Menambahkan state 'showAlert' untuk Modal Pop-up Notifikasi -->
-    <div class="py-6 sm:py-10 bg-white min-h-screen" x-data="{ showAlert: {{ session('success') || $errors->any() ? 'true' : 'false' }} }">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow rounded-xl border border-gray-100">
+    <div class="min-h-screen bg-slate-100 py-6 sm:py-10" x-data="{ showAlert: {{ session('success') || $errors->any() ? 'true' : 'false' }} }">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
 
                 <!-- Header Form -->
-                <div class="bg-blue-50 px-6 py-5 border-b border-blue-100">
-                    <p class="text-base text-blue-800 font-medium">
+                <div class="flex items-start gap-4 border-b border-slate-200 bg-gradient-to-r from-slate-900 to-blue-900 px-5 py-5 sm:items-center sm:px-7 sm:py-6">
+                    <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white ring-1 ring-inset ring-white/20">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+
+                    <p class="pt-0.5 text-sm font-medium leading-relaxed text-blue-50 sm:pt-0 sm:text-base">
                         Silakan perbarui data atau ganti foto bukti kegiatan Anda di bawah ini.
                     </p>
                 </div>
 
-                <div class="p-6 md:p-8">
-                    <form action="{{ route('absensi.update', $absensi->id) }}" method="POST" enctype="multipart/form-data">
-                        @csrf
-                        @method('PUT')
+                <form action="{{ route('absensi.update', $absensi->id) }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
 
-                        <div class="space-y-6">
+                    <div class="p-5 sm:p-7 lg:p-8">
+                        <div class="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
                             <!-- Input Tanggal -->
                             <div>
-                                <label for="tanggal" class="block text-base font-bold text-gray-800 mb-2">Tanggal Kegiatan</label>
-                                <input id="tanggal" name="tanggal" type="date" class="block w-full px-4 py-3 text-base border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg shadow-sm" required max="{{ date('Y-m-d') }}" value="{{ \Carbon\Carbon::parse($absensi->tanggal_waktu)->format('Y-m-d') }}" />
+                                <label for="tanggal" class="mb-2 block text-sm font-bold text-slate-800 sm:text-base">Tanggal Kegiatan</label>
+                                <input id="tanggal" name="tanggal" type="date" class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm transition hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700" required max="{{ date('Y-m-d') }}" value="{{ \Carbon\Carbon::parse($absensi->tanggal_waktu)->format('Y-m-d') }}" />
                             </div>
 
                             <!-- Input Jenis Kegiatan -->
                             <div>
-                                <label for="jenis_kegiatan" class="block text-base font-bold text-gray-800 mb-2">Nama Kegiatan</label>
-                                <input id="jenis_kegiatan" name="jenis_kegiatan" type="text" class="block w-full px-4 py-3 text-base border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg shadow-sm" required value="{{ old('jenis_kegiatan', $absensi->jenis_kegiatan) }}" />
+                                <label for="jenis_kegiatan" class="mb-2 block text-sm font-bold text-slate-800 sm:text-base">Nama Kegiatan</label>
+                                <input id="jenis_kegiatan" name="jenis_kegiatan" type="text" class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm transition hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700" required value="{{ old('jenis_kegiatan', $absensi->jenis_kegiatan) }}" />
                             </div>
+                        </div>
 
-                            <!-- Area Ganti Foto -->
-                            <div class="mt-6">
-                                <label class="block text-base font-bold text-gray-800 mb-2">Bukti Foto Saat Ini</label>
-                                <div class="border-2 border-dashed border-gray-300 rounded-xl p-5 bg-gray-50 flex flex-col sm:flex-row items-center sm:items-start gap-6">
+                        <!-- Area Ganti Foto -->
+                        <div class="mt-7 sm:mt-8">
+                            <label class="mb-2 block text-sm font-bold text-slate-800 sm:text-base">Bukti Foto Saat Ini</label>
 
+                            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                                <div class="grid grid-cols-1 lg:grid-cols-[260px_minmax(0,1fr)]">
                                     <!-- Thumbnail Foto Lama -->
-                                    <div class="shrink-0 w-32 h-32 sm:w-40 sm:h-40 overflow-hidden rounded-lg border-2 border-gray-200 shadow-sm bg-white">
-                                        <img src="{{ asset('storage/' . $absensi->bukti_file) }}" alt="Foto Lama" class="object-cover w-full h-full">
+                                    <div class="border-b border-slate-200 bg-slate-200/70 p-4 sm:p-5 lg:border-b-0 lg:border-r">
+                                        <div class="mx-auto aspect-square w-full max-w-[260px] overflow-hidden rounded-xl bg-slate-200 shadow-sm ring-1 ring-inset ring-slate-300 lg:max-w-none">
+                                            <img src="{{ asset('storage/' . $absensi->bukti_file) }}" alt="Foto Lama" class="h-full w-full object-cover">
+                                        </div>
                                     </div>
 
                                     <!-- Input File Baru -->
-                                    <div class="flex-1 w-full text-center sm:text-left">
-                                        <label for="bukti_file" class="block text-base font-bold text-gray-800 mb-1">Ganti Foto Baru (Opsional)</label>
-                                        <!-- Update keterangan batas maksimal file menjadi 10MB -->
-                                        <p class="text-sm text-gray-500 mb-4">Maksimal 10MB. Biarkan kosong jika tidak ingin mengubah foto yang sudah ada.</p>
+                                    <div class="flex min-w-0 flex-col justify-center p-5 sm:p-7 lg:p-8">
+                                        <label for="bukti_file" class="block text-base font-bold text-slate-900">Ganti Foto Baru (Opsional)</label>
 
-                                        <input id="bukti_file" name="bukti_file" type="file" class="block w-full text-base text-gray-700 file:mr-4 file:py-2.5 file:px-5 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 cursor-pointer border border-gray-300 rounded-lg bg-white" accept="image/jpeg, image/png, image/jpg" />
+                                        <!-- Update keterangan batas maksimal file menjadi 10MB -->
+                                        <p class="mt-1.5 text-sm leading-relaxed text-slate-500">Maksimal 10MB. Biarkan kosong jika tidak ingin mengubah foto yang sudah ada.</p>
+
+                                        <div class="mt-5 rounded-2xl border-2 border-dashed border-slate-300 bg-white p-3 transition hover:border-blue-400 hover:bg-blue-50/40 sm:p-4">
+                                            <input id="bukti_file" name="bukti_file" type="file" class="block w-full cursor-pointer rounded-xl bg-slate-50 text-sm text-slate-600 shadow-sm ring-1 ring-inset ring-slate-200 file:mr-3 file:min-h-[48px] file:cursor-pointer file:border-0 file:bg-blue-900 file:px-5 file:py-3 file:text-sm file:font-bold file:text-white hover:file:bg-blue-800 sm:text-base sm:file:mr-4 sm:file:px-6" accept="image/jpeg, image/png, image/jpg" />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Tombol Aksi -->
-                        <div class="mt-10 pt-6 border-t border-gray-100 flex flex-col-reverse sm:flex-row items-center justify-end gap-3 sm:gap-4">
-                            <!-- Tombol Batal -->
-                            <a href="{{ route('dashboard.narapidana') }}" class="w-full sm:w-auto text-center px-6 py-3.5 bg-red-600 border-2 border-red-300 text-white font-bold text-lg rounded-lg hover:bg-red-700 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-200 transition-all">
-                                Batal
-                            </a>
+                    <!-- Tombol Aksi -->
+                    <div class="flex flex-col-reverse items-stretch justify-end gap-3 border-t border-slate-200 bg-slate-50 px-5 py-5 sm:flex-row sm:items-center sm:px-7 sm:py-6 lg:px-8">
+                        <!-- Tombol Batal -->
+                        <a href="{{ route('dashboard.narapidana') }}" class="inline-flex min-h-[48px] w-full items-center justify-center rounded-xl border border-red-100 bg-red-500 px-6 py-3 text-center text-base font-bold text-white shadow-sm transition hover:border-red-200 hover:bg-red-400 focus:outline-none focus:ring-4 focus:ring-slate-200 sm:w-auto sm:text-lg">
+                            Batal
+                        </a>
 
-                            <!-- Tombol Simpan -->
-                            <button type="submit" class="w-full sm:w-auto px-8 py-3.5 bg-blue-600 rounded-lg font-bold text-white text-lg hover:bg-blue-700 focus:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all shadow-md flex items-center justify-center">
-                                <!-- Icon SVG: Check/Save -->
-                                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                Simpan Perubahan
-                            </button>
-                        </div>
-                    </form>
-
-                </div>
-            </div>
+                        <!-- Tombol Simpan -->
+                        <button type="submit" class="inline-flex min-h-[48px] w-full items-center justify-center rounded-xl bg-blue-900 px-7 py-3 text-base font-bold text-white shadow-sm transition hover:bg-blue-800 hover:shadow-md focus:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-200 sm:w-auto sm:text-lg">
+                            <!-- Icon SVG: Check/Save -->
+                            <svg class="mr-2 h-5 w-5 shrink-0 sm:h-6 sm:w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Simpan Perubahan
+                        </button>
+                    </div>
+                </form>
+            </section>
         </div>
 
         <!-- MODAL POP-UP NOTIFIKASI (Berhasil / Gagal) -->
-        <div x-show="showAlert" style="display: none;" class="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900 bg-opacity-60 backdrop-blur-sm px-4 transition-opacity" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+        <div x-show="showAlert" style="display: none;" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/65 px-4 py-6 backdrop-blur-sm transition-opacity" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
             <div @click="showAlert = false" class="absolute inset-0 cursor-pointer"></div>
-            <div class="relative z-10 w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 md:p-8 text-center transform transition-all" x-transition:enter="ease-out duration-300 delay-100" x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100">
+
+            <div class="relative z-10 w-full max-w-md transform overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-2xl transition-all sm:p-8" x-transition:enter="ease-out duration-300 delay-100" x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100">
 
                 @if(session('success'))
                     <!-- Tampilan Jika Sukses -->
-                    <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-green-100 mb-5">
-                        <svg class="h-10 w-10 text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                    <div class="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 ring-1 ring-inset ring-emerald-100">
+                        <svg class="h-10 w-10 text-emerald-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                        </svg>
                     </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Berhasil!</h3>
-                    <p class="text-base text-gray-600 mb-6">{{ session('success') }}</p>
+                    <h3 class="mb-2 text-2xl font-bold text-slate-900">Berhasil!</h3>
+                    <p class="mb-6 text-base leading-relaxed text-slate-600">{{ session('success') }}</p>
                 @elseif($errors->any())
                     <!-- Tampilan Jika Gagal/Error -->
-                    <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-red-100 mb-5">
-                        <svg class="h-10 w-10 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    <div class="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-red-50 ring-1 ring-inset ring-red-100">
+                        <svg class="h-10 w-10 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
                     </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Mohon Maaf, Gagal!</h3>
-                    <div class="text-sm text-red-700 text-left bg-red-50 p-4 rounded-lg mb-6 border border-red-100">
-                        <ul class="list-disc list-inside space-y-1">
+                    <h3 class="mb-3 text-2xl font-bold text-slate-900">Mohon Maaf, Gagal!</h3>
+                    <div class="mb-6 rounded-xl border border-red-100 bg-red-50 p-4 text-left text-sm leading-relaxed text-red-700">
+                        <ul class="list-inside list-disc space-y-1.5">
                             @foreach($errors->all() as $error)
                                 <li>{{ $error }}</li>
                             @endforeach
@@ -110,11 +132,26 @@
                     </div>
                 @endif
 
-                <button @click="showAlert = false" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-300 transition-colors shadow-md">
+                <button @click="showAlert = false" class="min-h-[48px] w-full rounded-xl bg-blue-900 px-4 py-3 font-bold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-200">
                     Tutup Peringatan
                 </button>
             </div>
         </div>
-
     </div>
 </x-app-layout>
+
+<style>
+    header:has(.bapas-narapidana-header) {
+        background-color: #f1f5f9 !important;
+        border-bottom: 1px solid #e2e8f0;
+        box-shadow: none !important;
+    }
+
+    .bapas-narapidana-header {
+        background-color: #f1f5f9;
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+</style>

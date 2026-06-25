@@ -11,55 +11,106 @@ class KinerjaPkController extends Controller
 {
     public function store(Request $request)
     {
-        // Validasi dasar
-        $request->validate([
-            'bulan' => ['required', 'integer', 'min:1', 'max:12'],
-            'tahun' => ['required', 'integer'],
-        ]);
-
         $userId = Auth::id();
-        $kategoriList = ['litmas', 'pendampingan', 'pembimbingan', 'pengawasan'];
-        $dataToSave = [];
-        $totalPersen = 0;
 
-        // Cek apakah data bulan dan tahun ini sudah ada (untuk hapus file lama jika diupdate)
+        // 1. Cek Data Existing (Apakah bulan & tahun ini sudah pernah diisi?)
         $existingData = KinerjaPk::where('pengawas_id', $userId)
             ->where('bulan', $request->bulan)
             ->where('tahun', $request->tahun)
             ->first();
 
+        // 2. Susun Aturan Validasi
+        $rules = [
+            'bulan' => ['required', 'integer', 'min:1', 'max:12'],
+            'tahun' => ['required', 'integer'],
+            'litmas_berhasil' => ['required', 'numeric', 'min:0'],
+            'pendampingan_kuota' => ['required', 'numeric', 'min:0'],
+            'pendampingan_berhasil' => ['required', 'numeric', 'min:0'],
+            'pembimbingan_kuota' => ['required', 'numeric', 'min:0'],
+            'pembimbingan_berhasil' => ['required', 'numeric', 'min:0'],
+            'pengawasan_kuota' => ['required', 'numeric', 'min:0'],
+            'pengawasan_berhasil' => ['required', 'numeric', 'min:0'],
+        ];
+
+        $kategoriList = ['litmas', 'pendampingan', 'pembimbingan', 'pengawasan'];
+
         foreach ($kategoriList as $kategori) {
-            $kuota = $request->input("{$kategori}_kuota", 0);
+            // PERBAIKAN: Jika belum ada data lama, FILE WAJIB DIUNGGAH (Required)
+            if (!$existingData || empty(json_decode($existingData->{"{$kategori}_file"}, true))) {
+                $rules["{$kategori}_file"] = ['required', 'array'];
+            } else {
+                $rules["{$kategori}_file"] = ['nullable', 'array'];
+            }
+            // Validasi format dan ukuran file
+            $rules["{$kategori}_file.*"] = ['file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'];
+        }
+
+        // 3. Eksekusi Validasi Ketat
+        $request->validate($rules, [
+            'required' => 'Kolom Kuota, Berhasil, dan File Bukti wajib diisi (File wajib diunggah untuk form baru).',
+            'numeric' => 'Kolom harus berupa angka.',
+            'min' => 'Nilai tidak boleh kurang dari 0.',
+            'mimes' => 'Format file bukti harus berupa JPG, JPEG, PNG, atau PDF.',
+            'max' => 'Ukuran file maksimal adalah 10MB per file.'
+        ]);
+
+        $dataToSave = [];
+        $totalPersen = 0;
+
+        foreach ($kategoriList as $kategori) {
+            // Kunci kuota Litmas wajib 12 dari sisi Server
+            $kuota = ($kategori === 'litmas') ? 12 : $request->input("{$kategori}_kuota", 0);
             $berhasil = $request->input("{$kategori}_berhasil", 0);
 
-            // Sesuaikan nama kolom dengan struktur database Anda
             $dataToSave["{$kategori}_kuota"] = $kuota;
             $dataToSave["{$kategori}_berhasil"] = $berhasil;
-            // Link G-Drive dihapus sesuai permintaan
+
+            // Kalkulasi
+            $persen = ($kuota > 0) ? ($berhasil / $kuota) * 100 : 0;
+            $totalPersen += $persen;
 
             // Proses Upload File
             if ($request->hasFile("{$kategori}_file")) {
                 $files = $request->file("{$kategori}_file");
-                $filePaths = [];
+                $fileData = [];
+
+                // Hapus file lama untuk mencegah penumpukan data sampah di server
+                if ($existingData && $existingData->{"{$kategori}_file"}) {
+                    $oldFiles = json_decode($existingData->{"{$kategori}_file"}, true);
+                    if (is_array($oldFiles)) {
+                        foreach ($oldFiles as $oldFile) {
+                            $oldPath = is_array($oldFile) ? ($oldFile['path'] ?? '') : $oldFile;
+                            if ($oldPath && Storage::disk('public')->exists($oldPath)) {
+                                Storage::disk('public')->delete($oldPath);
+                            }
+                        }
+                    }
+                }
 
                 foreach ($files as $file) {
-                    $filePaths[] = $file->store('bukti_kinerja_pk', 'public');
+                    $path = $file->store('bukti_kinerja_pk', 'public');
+                    $fileData[] = [
+                        'name' => $file->getClientOriginalName(),
+                        'path' => $path
+                    ];
                 }
-                $dataToSave["{$kategori}_file"] = json_encode($filePaths);
+                $dataToSave["{$kategori}_file"] = json_encode($fileData);
             }
         }
 
         // Hitung Rata-Rata Akhir & Predikat
-        $dataToSave['rata_rata'] = $totalPersen / 4;
+        $dataToSave['rata_rata'] = round($totalPersen / 4, 1);
 
-        if ($dataToSave['rata_rata'] >= 90) {
-            $dataToSave['predikat'] = 'Baik Sekali';
-        } elseif ($dataToSave['rata_rata'] >= 75) {
+        if ($dataToSave['rata_rata'] >= 91) {
+            $dataToSave['predikat'] = 'Sangat Baik';
+        } elseif ($dataToSave['rata_rata'] >= 81) {
             $dataToSave['predikat'] = 'Baik';
-        } elseif ($dataToSave['rata_rata'] >= 60) {
+        } elseif ($dataToSave['rata_rata'] >= 70) {
             $dataToSave['predikat'] = 'Cukup';
-        } else {
+        } elseif ($dataToSave['rata_rata'] >= 60) {
             $dataToSave['predikat'] = 'Kurang';
+        } else {
+            $dataToSave['predikat'] = 'Sangat Kurang';
         }
 
         // Simpan ke Database
@@ -68,6 +119,9 @@ class KinerjaPkController extends Controller
             $dataToSave
         );
 
-        return redirect()->back()->with('success', 'Formulir Kinerja PK berhasil disimpan dengan Predikat: ' . $dataToSave['predikat']);
+        $namaBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        $bulanNama = $namaBulan[$request->bulan - 1] ?? $request->bulan;
+
+        return redirect()->back()->with('success', 'Kinerja bulan ' . $bulanNama . ' ' . $request->tahun . ' berhasil disimpan.');
     }
 }

@@ -9,13 +9,7 @@ use Illuminate\Support\Facades\Storage;
 
 class AbsensiController extends Controller
 {
-    // ======================================================================
-    // BAGIAN 1: FITUR MANTAN NAPI / NARAPIDANA
-    // ======================================================================
-
-    /**
-     * Menampilkan halaman dashboard narapidana beserta riwayatnya.
-     */
+    // BAGIAN 1: FITUR MANTAN NAPI/NARAPIDANA
     public function indexNarapidana(Request $request)
     {
         $userId = Auth::id();
@@ -56,11 +50,11 @@ class AbsensiController extends Controller
         $request->validate([
             'tanggal'        => ['required', 'date', 'before_or_equal:today'],
             'jenis_kegiatan' => ['required', 'string', 'max:255'],
-            'bukti_file'     => ['required', 'image', 'mimes:jpeg,png,jpg', 'max:10240'], // Maksimal 10MB
+            'bukti_file'     => ['required', 'image', 'mimes:jpeg,jpg', 'max:10240'], // Maksimal 10MB
         ], [
             'tanggal.before_or_equal' => 'Tanggal kegiatan tidak boleh melebihi hari ini.',
             'bukti_file.max'          => 'Ukuran file gambar maksimal adalah 10MB.',
-            'bukti_file.image'        => 'File yang diunggah harus berupa gambar (JPEG, PNG, JPG).',
+            'bukti_file.image'        => 'File yang diunggah harus berupa gambar (JPEG, JPG).',
         ]);
 
         $path = $request->file('bukti_file')->store('bukti_kegiatan', 'public');
@@ -95,7 +89,7 @@ class AbsensiController extends Controller
         $request->validate([
             'tanggal'        => ['required', 'date', 'before_or_equal:today'],
             'jenis_kegiatan' => ['required', 'string', 'max:255'],
-            'bukti_file'     => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:10240'],
+            'bukti_file'     => ['nullable', 'image', 'mimes:jpeg,jpg', 'max:10240'],
         ]);
 
         $dataToUpdate = [
@@ -118,13 +112,7 @@ class AbsensiController extends Controller
     }
 
 
-    // ======================================================================
-    // BAGIAN 2: FITUR PENGAWAS / PK
-    // ======================================================================
-
-    /**
-     * Menampilkan dashboard Pengawas/PK beserta data laporan dan filter pencarian.
-     */
+    // BAGIAN 2: FITUR PENGAWAS/PK
     public function indexPengawas(Request $request)
     {
         // Panggil relasi 'narapidana' agar tidak terjadi N+1 Query Problem saat menampilkan nama/nomor induk di tabel
@@ -166,7 +154,12 @@ class AbsensiController extends Controller
         // 5. Eksekusi Query (selalu urutkan dari yang terbaru)
         $semuaAbsensi = $query->orderBy('tanggal_waktu', 'desc')->get();
 
-        // Return ke view 'pengawas.blade.php' yang akan kita buat
-        return view('dashboard.pengawas', compact('semuaAbsensi', 'availableYears'));
+        // Di dalam indexPengawas() pada AbsensiController.php
+        $riwayatKinerja = \App\Models\KinerjaPk::where('pengawas_id', Auth::id())
+            ->orderBy('tahun', 'desc')
+            ->orderBy('bulan', 'desc')
+            ->get();
+
+        return view('dashboard.pengawas', compact('semuaAbsensi', 'availableYears', 'riwayatKinerja'));
     }
 }

@@ -22,4 +22,14 @@ class KinerjaPk extends Model
     {
         return $this->belongsTo(User::class, 'pengawas_id');
     }
+
+    public function getFilesAttribute()
+    {
+        $kategoris = ['litmas', 'pendampingan', 'pembimbingan', 'pengawasan'];
+        $files = [];
+        foreach ($kategoris as $k) {
+            $files[$k] = json_decode($this->{$k . '_file'}, true) ?? [];
+        }
+        return $files;
+    }
 }

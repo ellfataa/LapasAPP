@@ -40,13 +40,15 @@
 
                         <div x-data="{
                             data: {
-                                litmas: { kuota: 0, berhasil: 0 },
-                                pendampingan: { kuota: 0, berhasil: 0 },
-                                pembimbingan: { kuota: 0, berhasil: 0 },
-                                pengawasan: { kuota: 0, berhasil: 0 }
+                                litmas: { kuota: 12, berhasil: '' },
+                                pendampingan: { kuota: '', berhasil: '' },
+                                pembimbingan: { kuota: '', berhasil: '' },
+                                pengawasan: { kuota: '', berhasil: '' }
                             },
                             calc(kuota, berhasil) {
-                                if (kuota > 0) return ((berhasil / kuota) * 100);
+                                let k = parseFloat(kuota);
+                                let b = parseFloat(berhasil);
+                                if (k > 0 && !isNaN(b)) return ((b / k) * 100);
                                 return 0;
                             },
                             get rataRata() {
@@ -59,10 +61,11 @@
                             },
                             get predikat() {
                                 let rata = parseFloat(this.rataRata);
-                                if(rata >= 90) return 'Baik Sekali';
-                                if(rata >= 75) return 'Baik';
-                                if(rata >= 60) return 'Cukup';
-                                return 'Kurang';
+                                if(rata >= 91) return 'Sangat Baik';
+                                if(rata >= 81) return 'Baik';
+                                if(rata >= 70) return 'Cukup';
+                                if(rata >= 60) return 'Kurang';
+                                return 'Sangat Kurang';
                             }
                         }">
 
@@ -81,12 +84,16 @@
                                         <h4 class="font-bold text-lg text-blue-900 mb-4 border-b border-gray-200 pb-2">
                                             {{ $loop->iteration }}. {{ $label }}
                                         </h4>
-                                        <!-- Grid diubah menjadi 4 kolom karena G-Drive dihapus -->
                                         <div class="grid grid-cols-1 lg:grid-cols-4 gap-5 items-start">
 
                                             <div>
                                                 <label for="{{ $key }}_kuota" class="block text-sm font-bold text-gray-800 mb-2">Kuota Beban per Bulan</label>
-                                                <input type="number" id="{{ $key }}_kuota" name="{{ $key }}_kuota" x-model.number="data.{{ $key }}.kuota" min="0" required class="block w-full px-4 py-2 text-base border-gray-300 focus:border-blue-500 rounded-lg shadow-sm">
+                                                @if($key === 'litmas')
+                                                    <input type="number" id="{{ $key }}_kuota" name="{{ $key }}_kuota" x-model.number="data.{{ $key }}.kuota" readonly class="block w-full px-4 py-2 text-base border-gray-300 bg-gray-200 text-gray-700 cursor-not-allowed rounded-lg shadow-sm">
+                                                    <p class="text-[11px] text-gray-500 mt-1 font-medium">*Kuota tetap (Fixed)</p>
+                                                @else
+                                                    <input type="number" id="{{ $key }}_kuota" name="{{ $key }}_kuota" x-model.number="data.{{ $key }}.kuota" min="0" required class="block w-full px-4 py-2 text-base border-gray-300 focus:border-blue-500 rounded-lg shadow-sm">
+                                                @endif
                                             </div>
 
                                             <div>
@@ -103,13 +110,17 @@
                                             </div>
 
                                             <div>
-                                                <label for="{{ $key }}_file" class="block text-sm font-bold text-gray-800 mb-2">Upload Bukti (Gambar/PDF)</label>
+                                                <label for="{{ $key }}_file" class="block text-sm font-bold text-gray-800 mb-2">Upload Bukti (Foto/File PDF)</label>
                                                 <input type="file"
                                                     id="{{ $key }}_file"
                                                     name="{{ $key }}_file[]"
                                                     multiple
+                                                    required
                                                     accept=".jpg,.jpeg,.png,.pdf"
+                                                    onchange="updateFileList('{{ $key }}', this)"
                                                     class="block w-full text-xs text-gray-700 file:mr-2 file:py-2.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer border border-gray-300 rounded-lg bg-white">
+
+                                                <div id="file-list-{{ $key }}" class="mt-3 text-xs text-blue-700 space-y-2"></div>
                                             </div>
 
                                         </div>
@@ -131,10 +142,11 @@
                                         <span class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Predikat</span>
                                         <span class="font-extrabold text-2xl"
                                               :class="{
-                                                  'text-green-600': predikat === 'Baik Sekali',
+                                                  'text-green-600': predikat === 'Sangat Baik',
                                                   'text-blue-600': predikat === 'Baik',
                                                   'text-yellow-500': predikat === 'Cukup',
-                                                  'text-red-600': predikat === 'Kurang'
+                                                  'text-orange-500': predikat === 'Kurang',
+                                                  'text-red-600': predikat === 'Sangat Kurang'
                                               }" x-text="predikat"></span>
                                     </div>
                                 </div>
@@ -147,7 +159,96 @@
                                 </button>
                             </div>
 
-                        </div> </form>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="bg-white overflow-hidden shadow rounded-xl border border-gray-100 mt-8">
+                <div class="bg-blue-50 px-6 py-5 border-b border-blue-100">
+                    <h3 class="text-xl font-bold text-blue-900">Riwayat Penilaian Kinerja Saya</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-gray-700">
+                        <thead class="bg-gray-50 text-sm font-semibold text-gray-700 border-b border-gray-200">
+                            <tr>
+                                <th class="px-6 py-4 w-32">Periode</th>
+                                <th class="px-6 py-4">Kategori & Bukti</th>
+                                <th class="px-6 py-4 text-right w-32">Predikat</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @forelse($riwayatKinerja as $kinerja)
+                            @php
+                                $namaBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                            @endphp
+                            <tr class="hover:bg-gray-50 align-top transition-colors">
+                                <td class="px-6 py-6 font-bold text-gray-900 text-base">
+                                    {{ $namaBulan[$kinerja->bulan - 1] ?? $kinerja->bulan }} {{ $kinerja->tahun }}
+                                    <div class="text-xs text-gray-500 font-normal mt-1">
+                                        {{ $kinerja->bulan }}/{{ $kinerja->tahun }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-6">
+                                    <div class="space-y-5">
+                                        @foreach(['litmas', 'pendampingan', 'pembimbingan', 'pengawasan'] as $kat)
+                                            <div>
+                                                <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 flex items-center gap-2">
+                                                    {{ $kat }}:
+                                                    <span class="text-blue-600 normal-case text-sm font-semibold tracking-normal">
+                                                        {{ $kinerja->{$kat.'_berhasil'} }}/{{ $kinerja->{$kat.'_kuota'} }}
+                                                        ({{ number_format(($kinerja->{$kat.'_kuota'} > 0 ? ($kinerja->{$kat.'_berhasil'}/$kinerja->{$kat.'_kuota'})*100 : 0), 1) }}%)
+                                                    </span>
+                                                </p>
+                                                <div class="flex flex-col gap-1 mb-1">
+                                                    @php
+                                                        $rawFile = $kinerja->{$kat.'_file'};
+                                                        $files = json_decode($rawFile, true);
+                                                        if (!is_array($files)) {
+                                                            $files = $rawFile ? [$rawFile] : [];
+                                                        }
+                                                    @endphp
+
+                                                    @forelse($files as $file)
+                                                        @php
+                                                            $filePath = is_array($file) ? ($file['path'] ?? '') : $file;
+                                                            $fileName = is_array($file) ? ($file['name'] ?? basename($filePath)) : basename($filePath);
+                                                        @endphp
+                                                        @if($filePath)
+                                                            <a href="{{ asset('storage/' . $filePath) }}" target="_blank"
+                                                               class="text-[13px] text-blue-600 hover:text-blue-800 hover:underline">
+                                                                {{ $fileName }}
+                                                            </a>
+                                                        @endif
+                                                    @empty
+                                                        <span class="text-[12px] text-gray-400 italic">- Tidak ada file -</span>
+                                                    @endforelse
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </td>
+                                <td class="px-6 py-6 text-right font-bold text-lg">
+                                    <span class="
+                                        {{ $kinerja->predikat == 'Sangat Baik' ? 'text-green-600' : '' }}
+                                        {{ $kinerja->predikat == 'Baik' ? 'text-blue-600' : '' }}
+                                        {{ $kinerja->predikat == 'Cukup' ? 'text-yellow-500' : '' }}
+                                        {{ $kinerja->predikat == 'Kurang' ? 'text-orange-500' : '' }}
+                                        {{ $kinerja->predikat == 'Sangat Kurang' ? 'text-red-600' : '' }}
+                                    ">
+                                        {{ $kinerja->predikat }}
+                                    </span>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="3" class="px-6 py-10 text-center text-gray-500 font-medium text-base">
+                                    Belum ada riwayat penilaian kinerja yang disimpan.
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -157,18 +258,16 @@
                         <svg class="w-7 h-7 mr-3 text-blue-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
                         </svg>
-                        Filter Cari Absensi/Laporan Wajib
+                        Filter Cari Absensi/Laporan Wajib Klien
                     </h3>
                 </div>
 
                 <div class="p-6 md:p-8">
                     <form method="GET" action="{{ route('dashboard.pengawas') }}" class="grid grid-cols-1 md:grid-cols-12 gap-5 items-end">
-
                         <div class="md:col-span-5">
                             <label for="search" class="block text-base font-bold text-gray-800 mb-2">Cari Nama/Nomor Induk</label>
                             <input type="text" id="search" name="search" value="{{ request('search') }}" placeholder="Ketik nama klien..." class="block w-full px-4 py-3 text-base border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg shadow-sm">
                         </div>
-
                         <div class="md:col-span-3">
                             <label for="month" class="block text-base font-bold text-gray-800 mb-2">Bulan</label>
                             <select id="month" name="month" class="block w-full px-4 py-3 text-base font-medium text-gray-700 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg shadow-sm cursor-pointer bg-white">
@@ -179,7 +278,6 @@
                                 @endforeach
                             </select>
                         </div>
-
                         <div class="md:col-span-2">
                             <label for="year" class="block text-base font-bold text-gray-800 mb-2">Tahun</label>
                             <select id="year" name="year" class="block w-full px-4 py-3 text-base font-medium text-gray-700 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg shadow-sm cursor-pointer bg-white">
@@ -191,13 +289,11 @@
                                 @endif
                             </select>
                         </div>
-
                         <div class="md:col-span-2 flex flex-col gap-2">
                             <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow transition-colors flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-blue-300">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                                 Cari
                             </button>
-
                             @if(request('search') || request('month') || request('year'))
                                 <a href="{{ route('dashboard.pengawas') }}" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 font-bold py-2 px-4 rounded-lg transition-colors text-center text-sm">
                                     Reset Filter
@@ -216,7 +312,6 @@
                         </svg>
                         Daftar Absensi/Laporan Wajib Klien
                     </h3>
-
                     <span class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-sm flex items-center">
                         Total: {{ $semuaAbsensi->count() }} Laporan
                     </span>
@@ -254,7 +349,7 @@
                             @empty
                                 <tr>
                                     <td colspan="4" class="px-6 py-12 text-center text-gray-500">
-                                        <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                        <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                         </svg>
                                         <span class="font-medium text-lg block">Tidak ada laporan ditemukan</span>
@@ -296,7 +391,7 @@
                     <h3 class="text-2xl font-bold text-gray-900 mb-3">Mohon Maaf, Gagal!</h3>
                     <div class="text-sm text-red-700 text-left bg-red-50 p-4 rounded-lg mb-6 border border-red-100">
                         <ul class="list-disc list-inside space-y-1">
-                            @foreach($errors->all() as $error)
+                            @foreach(array_unique($errors->all()) as $error)
                                 <li>{{ $error }}</li>
                             @endforeach
                         </ul>
@@ -310,3 +405,27 @@
 
     </div>
 </x-app-layout>
+
+<script>
+    function updateFileList(key, input) {
+        const container = document.getElementById('file-list-' + key);
+        container.innerHTML = '';
+
+        if (input.files.length > 0) {
+            for (let i = 0; i < input.files.length; i++) {
+                const file = input.files[i];
+                const fileUrl = URL.createObjectURL(file);
+                const fileDiv = document.createElement('div');
+                fileDiv.className = 'flex items-center gap-1 mt-1';
+
+                fileDiv.innerHTML = `
+                    <span class="text-[12px] text-gray-400">📄</span>
+                    <a href="${fileUrl}" target="_blank" class="text-[13px] text-blue-600 font-medium truncate hover:text-blue-800 hover:underline">
+                        ${file.name}
+                    </a>
+                `;
+                container.appendChild(fileDiv);
+            }
+        }
+    }
+</script>
