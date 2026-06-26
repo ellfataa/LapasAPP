@@ -4,7 +4,9 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\KinerjaPkController;
+use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Auth\GoogleAuthController;
 
 // 1. RUTE UTAMA: Otomatis arahkan sesuai status login
 Route::get('/', function () {
@@ -13,6 +15,10 @@ Route::get('/', function () {
     }
     return redirect('/login');
 });
+
+// Route Google Auth (Tidak perlu login)
+Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])->name('google.login');
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
 
 // Grup Route yang butuh Login
 Route::middleware('auth')->group(function () {
@@ -32,9 +38,11 @@ Route::middleware('auth')->group(function () {
     // 1. ROUTE KHUSUS ADMIN
     // ====================================================================
     Route::middleware('role:admin')->group(function () {
-        Route::get('/admin/dashboard', function () {
-            return "Halaman Dashboard Admin (Sedang dalam tahap pengembangan)";
-        })->name('dashboard.admin');
+        // Halaman Utama Dashboard Admin
+        Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('dashboard.admin');
+
+        // Hapus Data Pengguna
+        Route::delete('/admin/user/{id}', [AdminController::class, 'destroyUser'])->name('admin.user.destroy');
     });
 
     // ====================================================================
