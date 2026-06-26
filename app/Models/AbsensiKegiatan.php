@@ -7,11 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AbsensiKegiatan extends Model
 {
-    // Menentukan nama tabel secara eksplisit karena sudah dibuat di DB
     protected $table = 'absensi_kegiatan';
 
     protected $fillable = [
         'narapidana_id',
+        'pengawas_id', // TAMBAHAN BARU
         'tanggal_waktu',
         'jenis_kegiatan',
         'bukti_file',
@@ -19,9 +19,14 @@ class AbsensiKegiatan extends Model
         'catatan_pengawas',
     ];
 
-    // Relasi balik ke model User (Narapidana)
     public function narapidana(): BelongsTo
     {
         return $this->belongsTo(User::class, 'narapidana_id', 'id');
+    }
+
+    // TAMBAHAN BARU: Relasi ke Pengawas
+    public function pengawas(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'pengawas_id', 'id');
     }
 }

@@ -3,18 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Models\AbsensiKegiatan;
+use App\Models\User; // TAMBAHAN: Import model User
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class AbsensiController extends Controller
 {
-    // BAGIAN 1: FITUR MANTAN NAPI/NARAPIDANA
+    // ======================================================================
+    // BAGIAN 1: FITUR MANTAN NAPI / NARAPIDANA
+    // ======================================================================
+
     public function indexNarapidana(Request $request)
     {
         $userId = Auth::id();
 
-        // 1. Ambil daftar tahun yang tersedia dari database berdasarkan riwayat user
+        // Ambil daftar user yang memiliki role 'pengawas' untuk dilempar ke dropdown form
+        $daftarPengawas = User::where('role', 'pengawas')->get();
+
         $availableYears = AbsensiKegiatan::where('narapidana_id', $userId)
             ->selectRaw('YEAR(tanggal_waktu) as year')
             ->distinct()
@@ -24,43 +30,42 @@ class AbsensiController extends Controller
 
         $currentSystemYear = date('Y');
 
-        // Pastikan tahun ini selalu ada di dropdown meskipun belum absen
         if (!in_array($currentSystemYear, $availableYears)) {
             $availableYears[] = $currentSystemYear;
-            rsort($availableYears); // Urutkan dari tahun terbaru ke terlama
+            rsort($availableYears);
         }
 
-        // 2. Tentukan tahun yang sedang aktif dilihat (dari parameter URL, default: tahun ini)
         $selectedYear = $request->input('year', $currentSystemYear);
 
-        // 3. Ambil riwayat HANYA untuk tahun yang dipilih
-        $riwayat = AbsensiKegiatan::where('narapidana_id', $userId)
+        $riwayat = AbsensiKegiatan::with('pengawas')
+            ->where('narapidana_id', $userId)
             ->whereYear('tanggal_waktu', $selectedYear)
             ->orderBy('tanggal_waktu', 'desc')
             ->get();
 
-        return view('dashboard.narapidana', compact('riwayat', 'availableYears', 'selectedYear'));
+        // Tambahkan variabel $daftarPengawas ke compact
+        return view('dashboard.narapidana', compact('riwayat', 'availableYears', 'selectedYear', 'daftarPengawas'));
     }
 
-    /**
-     * Memproses form input laporan baru.
-     */
     public function store(Request $request)
     {
         $request->validate([
             'tanggal'        => ['required', 'date', 'before_or_equal:today'],
             'jenis_kegiatan' => ['required', 'string', 'max:255'],
-            'bukti_file'     => ['required', 'image', 'mimes:jpeg,jpg', 'max:10240'], // Maksimal 10MB
+            'pengawas_id'    => ['required', 'exists:users,id'], // PERBAIKAN: Validasi Pengawas
+            'bukti_file'     => ['required', 'image', 'mimes:jpeg,jpg,png', 'max:10240'],
         ], [
             'tanggal.before_or_equal' => 'Tanggal kegiatan tidak boleh melebihi hari ini.',
+            'pengawas_id.required'    => 'Anda wajib memilih Pengawas Pembimbing.',
             'bukti_file.max'          => 'Ukuran file gambar maksimal adalah 10MB.',
-            'bukti_file.image'        => 'File yang diunggah harus berupa gambar (JPEG, JPG).',
+            'bukti_file.image'        => 'File yang diunggah harus berupa gambar (JPEG, PNG, JPG).',
         ]);
 
         $path = $request->file('bukti_file')->store('bukti_kegiatan', 'public');
 
         AbsensiKegiatan::create([
             'narapidana_id'  => Auth::id(),
+            'pengawas_id'    => $request->pengawas_id, // PERBAIKAN: Simpan ID Pengawas
             'tanggal_waktu'  => $request->tanggal,
             'jenis_kegiatan' => $request->jenis_kegiatan,
             'bukti_file'     => $path,
@@ -69,19 +74,14 @@ class AbsensiController extends Controller
         return redirect()->back()->with('success', 'Absensi dan bukti kegiatan berhasil dikirim!');
     }
 
-    /**
-     * Menampilkan halaman form edit laporan.
-     */
     public function edit($id)
     {
         $absensi = AbsensiKegiatan::where('narapidana_id', Auth::id())->findOrFail($id);
+        $daftarPengawas = User::where('role', 'pengawas')->get(); // Ambil list pengawas untuk form edit
 
-        return view('dashboard.edit_absensi_narapidana', compact('absensi'));
+        return view('dashboard.edit_absensi_narapidana', compact('absensi', 'daftarPengawas'));
     }
 
-    /**
-     * Memproses update data dan file gambar.
-     */
     public function update(Request $request, $id)
     {
         $absensi = AbsensiKegiatan::where('narapidana_id', Auth::id())->findOrFail($id);
@@ -89,12 +89,14 @@ class AbsensiController extends Controller
         $request->validate([
             'tanggal'        => ['required', 'date', 'before_or_equal:today'],
             'jenis_kegiatan' => ['required', 'string', 'max:255'],
-            'bukti_file'     => ['nullable', 'image', 'mimes:jpeg,jpg', 'max:10240'],
+            'pengawas_id'    => ['required', 'exists:users,id'], // Validasi update
+            'bukti_file'     => ['nullable', 'image', 'mimes:jpeg,jpg,png', 'max:10240'],
         ]);
 
         $dataToUpdate = [
             'tanggal_waktu'  => $request->tanggal,
             'jenis_kegiatan' => $request->jenis_kegiatan,
+            'pengawas_id'    => $request->pengawas_id, // Update pengawas id
         ];
 
         if ($request->hasFile('bukti_file')) {
@@ -111,15 +113,20 @@ class AbsensiController extends Controller
         return redirect()->route('dashboard.narapidana')->with('success', 'Data kegiatan berhasil diperbarui!');
     }
 
+    // ======================================================================
+    // BAGIAN 2: FITUR PENGAWAS / PK
+    // ======================================================================
 
-    // BAGIAN 2: FITUR PENGAWAS/PK
     public function indexPengawas(Request $request)
     {
-        // Panggil relasi 'narapidana' agar tidak terjadi N+1 Query Problem saat menampilkan nama/nomor induk di tabel
-        $query = AbsensiKegiatan::with('narapidana');
+        $userId = Auth::id();
 
-        // 1. Ambil ketersediaan Tahun untuk Dropdown Filter
-        $availableYears = AbsensiKegiatan::selectRaw('YEAR(tanggal_waktu) as year')
+        // PERBAIKAN KRUSIAL: Filter agar HANYA mengambil Absensi yang ditujukan ke Pengawas yang sedang login!
+        $query = AbsensiKegiatan::with('narapidana')->where('pengawas_id', $userId);
+
+        // 1. Ambil ketersediaan Tahun (Juga harus difilter berdasarkan pengawas ini)
+        $availableYears = AbsensiKegiatan::where('pengawas_id', $userId)
+            ->selectRaw('YEAR(tanggal_waktu) as year')
             ->distinct()
             ->orderBy('year', 'desc')
             ->pluck('year')
@@ -128,34 +135,28 @@ class AbsensiController extends Controller
         $currentSystemYear = date('Y');
         if (!in_array($currentSystemYear, $availableYears)) {
             $availableYears[] = $currentSystemYear;
-            rsort($availableYears); // Urutkan dari tahun terbaru
+            rsort($availableYears);
         }
 
-        // 2. Terapkan Filter Pencarian Nama / Nomor Induk
         if ($request->filled('search')) {
             $search = $request->search;
-            // Pencarian dilakukan pada tabel 'users' yang berelasi
             $query->whereHas('narapidana', function($q) use ($search) {
                 $q->where('nama', 'like', "%{$search}%")
                   ->orWhere('nomor_induk', 'like', "%{$search}%");
             });
         }
 
-        // 3. Terapkan Filter Bulan
         if ($request->filled('month')) {
             $query->whereMonth('tanggal_waktu', $request->month);
         }
 
-        // 4. Terapkan Filter Tahun
         if ($request->filled('year')) {
             $query->whereYear('tanggal_waktu', $request->year);
         }
 
-        // 5. Eksekusi Query (selalu urutkan dari yang terbaru)
         $semuaAbsensi = $query->orderBy('tanggal_waktu', 'desc')->get();
 
-        // Di dalam indexPengawas() pada AbsensiController.php
-        $riwayatKinerja = \App\Models\KinerjaPk::where('pengawas_id', Auth::id())
+        $riwayatKinerja = \App\Models\KinerjaPk::where('pengawas_id', $userId)
             ->orderBy('tahun', 'desc')
             ->orderBy('bulan', 'desc')
             ->get();

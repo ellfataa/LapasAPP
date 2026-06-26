@@ -12,15 +12,12 @@
         </div>
     </x-slot>
 
-    <!-- Menambahkan state 'showAlert' yang otomatis true jika ada session success atau error validasi -->
     <div class="min-h-screen bg-slate-100 py-6 sm:py-10" x-data="{ showModal: false, imgSrc: '', showAlert: {{ session('success') || $errors->any() ? 'true' : 'false' }} }">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:space-y-8 sm:px-6 lg:px-8">
 
-            <!-- BLOK 1: FORM INPUT ABSENSI -->
             <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                 <div class="flex items-center gap-4 border-b border-slate-200 bg-gradient-to-r from-slate-900 to-blue-900 px-5 py-5 sm:px-7 sm:py-6">
                     <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white ring-1 ring-inset ring-white/20">
-                        <!-- Icon SVG: Document/Edit -->
                         <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                         </svg>
@@ -44,6 +41,18 @@
                                 <label for="jenis_kegiatan" class="mb-2 block text-sm font-bold text-slate-800 sm:text-base">Nama Kegiatan</label>
                                 <input id="jenis_kegiatan" name="jenis_kegiatan" type="text" class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm transition placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700" required placeholder="Contoh: Membersihkan selokan" value="{{ old('jenis_kegiatan') }}" />
                             </div>
+
+                            <div class="md:col-span-2">
+                                <label for="pengawas_id" class="mb-2 block text-sm font-bold text-slate-800 sm:text-base">Penanggung Jawab PK/Pengawas</label>
+                                <select id="pengawas_id" name="pengawas_id" required class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm transition hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700 cursor-pointer">
+                                    <option value="" disabled selected>-- Pilih PK Lapas yang Mengampu Anda --</option>
+                                    @foreach($daftarPengawas as $pk)
+                                        <option value="{{ $pk->id }}" {{ old('pengawas_id') == $pk->id ? 'selected' : '' }}>
+                                            {{ $pk->nama }} (NIP/NRP: {{ $pk->nomor_induk }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
 
                         <div class="mt-6">
@@ -65,9 +74,7 @@
                 </div>
             </section>
 
-            <!-- BLOK 2: PETA KALENDER DENGAN FILTER TAHUN -->
             <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <!-- Header Kalender: Diatur agar judul di kiri, filter di kanan, dan tidak tabrakan di HP -->
                 <div class="flex flex-col gap-5 border-b border-slate-200 bg-white px-5 py-5 sm:px-7 sm:py-6 xl:flex-row xl:items-center xl:justify-between">
                     <h3 class="flex items-center gap-4 text-lg font-bold leading-snug text-slate-900 sm:text-xl">
                         <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-900 ring-1 ring-inset ring-blue-100">
@@ -78,19 +85,14 @@
                         Kalender Kegiatan Absensi/Laporan Wajib
                     </h3>
 
-                    <!-- Kumpulan Opsi Kanan (Dropdown & Info Geser) -->
                     <div class="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center xl:w-auto">
-
-                        <!-- Form Filter Tahun -->
                         <form method="GET" action="{{ route('dashboard.narapidana') }}" class="m-0 flex min-h-[44px] w-full items-center overflow-hidden rounded-xl border border-slate-300 bg-white shadow-sm transition focus-within:border-blue-700 focus-within:ring-4 focus-within:ring-blue-100 sm:w-auto">
                             <label for="yearFilter" class="sr-only">Pilih Tahun</label>
-                            <!-- Ikon Filter Mungil -->
                             <div class="flex self-stretch items-center justify-center border-r border-slate-200 bg-slate-50 px-3 text-slate-600">
                                 <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
                                 </svg>
                             </div>
-                            <!-- Dropdown dengan padding pr-8 agar panah tidak menabrak teks -->
                             <select id="yearFilter" name="year" onchange="this.form.submit()" class="block min-h-[44px] w-full cursor-pointer border-0 py-2.5 pl-3 pr-9 text-sm font-bold text-slate-800 focus:ring-0 sm:w-auto">
                                 @foreach($availableYears as $year)
                                     <option value="{{ $year }}" {{ $selectedYear == $year ? 'selected' : '' }}>Tahun {{ $year }}</option>
@@ -106,8 +108,6 @@
 
                 @php
                     $bulans = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-
-                    // Gunakan tahun dari Controller, bukan hardcode date('Y')
                     $currentYear = $selectedYear;
 
                     $absensiMap = [];
@@ -122,7 +122,6 @@
                         <div class="flex min-w-max gap-4 px-1 pb-1">
                             @for($m = 1; $m <= 12; $m++)
                                 <article class="w-64 shrink-0 snap-start overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md sm:w-72">
-                                    <!-- Menambahkan keterangan Tahun di sebelah nama Bulan -->
                                     <h4 class="border-b border-slate-200 bg-slate-50 px-4 py-3.5 text-center text-base font-bold text-slate-800">
                                         {{ $bulans[$m-1] }} ({{ $currentYear }})
                                     </h4>
@@ -131,13 +130,11 @@
                                         @php $daysInMonth = \Carbon\Carbon::create($currentYear, $m)->daysInMonth; @endphp
                                         @for($d = 1; $d <= $daysInMonth; $d++)
                                             @if(isset($absensiMap[$m][$d]))
-                                                <!-- Kotak Ada Foto -->
                                                 <button type="button" @click.prevent="showModal = true; imgSrc = '{{ asset('storage/' . $absensiMap[$m][$d]) }}'" title="Lihat foto tanggal {{ $d }} {{ $bulans[$m-1] }} {{ $currentYear }}" class="group relative block aspect-square w-full overflow-hidden rounded-lg border-2 border-emerald-500 bg-emerald-50 shadow-sm transition hover:scale-105 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-emerald-200">
                                                     <img src="{{ asset('storage/' . $absensiMap[$m][$d]) }}" alt="Bukti" class="h-full w-full object-cover transition duration-300 group-hover:scale-110">
                                                     <span class="absolute inset-0 ring-1 ring-inset ring-black/5"></span>
                                                 </button>
                                             @else
-                                                <!-- Kotak Kosong -->
                                                 <div class="flex aspect-square w-full items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-sm font-semibold text-slate-500 sm:text-base" title="Tanggal {{ $d }}">{{ $d }}</div>
                                             @endif
                                         @endfor
@@ -149,7 +146,6 @@
                 </div>
             </section>
 
-            <!-- BLOK 3: TABEL LOGBOOK DENGAN FILTER TAHUN -->
             <section id="riwayat-absensi" class="scroll-mt-24 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                 <div class="flex flex-col gap-5 border-b border-slate-200 bg-white px-5 py-5 sm:px-7 sm:py-6 lg:flex-row lg:items-center lg:justify-between">
                     <h3 class="flex items-center gap-4 text-lg font-bold leading-snug text-slate-900 sm:text-xl">
@@ -167,7 +163,6 @@
                         </span>
                     </h3>
 
-                    <!-- Filter Tahun Riwayat -->
                     <form method="GET" action="{{ route('dashboard.narapidana') }}#riwayat-absensi" class="m-0 flex min-h-[44px] w-full items-center overflow-hidden rounded-xl border border-slate-300 bg-white shadow-sm transition focus-within:border-blue-700 focus-within:ring-4 focus-within:ring-blue-100 lg:w-auto">
                         <label for="yearFilterRiwayat" class="sr-only">Pilih Tahun Riwayat</label>
 
@@ -188,11 +183,12 @@
                 </div>
 
                 <div class="custom-scrollbar overflow-x-auto">
-                    <table class="w-full min-w-[760px] text-left text-slate-700">
+                    <table class="w-full min-w-[850px] text-left text-slate-700">
                         <thead class="border-b border-slate-200 bg-slate-100">
                             <tr>
                                 <th scope="col" class="w-40 px-6 py-4 text-sm font-bold uppercase tracking-wide text-slate-700">Tanggal</th>
                                 <th scope="col" class="px-6 py-4 text-sm font-bold uppercase tracking-wide text-slate-700">Nama Kegiatan</th>
+                                <th scope="col" class="w-56 px-6 py-4 text-sm font-bold uppercase tracking-wide text-slate-700">Pengawas / PK</th>
                                 <th scope="col" class="w-36 px-6 py-4 text-center text-sm font-bold uppercase tracking-wide text-slate-700">Bukti Foto</th>
                                 <th scope="col" class="w-36 px-6 py-4 text-center text-sm font-bold uppercase tracking-wide text-slate-700">Pengaturan</th>
                             </tr>
@@ -203,8 +199,16 @@
                                     <td class="whitespace-nowrap px-6 py-5 font-bold text-slate-900">
                                         {{ \Carbon\Carbon::parse($item->tanggal_waktu)->format('d M Y') }}
                                     </td>
-                                    <td class="min-w-[240px] px-6 py-5 leading-relaxed text-slate-700">
+                                    <td class="min-w-[200px] px-6 py-5 leading-relaxed text-slate-700">
                                         {{ $item->jenis_kegiatan }}
+                                    </td>
+                                    <td class="px-6 py-5 text-slate-700 font-medium">
+                                        @if($item->pengawas)
+                                            <span class="text-blue-900 font-bold block">{{ $item->pengawas->nama }}</span>
+                                            <span class="text-xs text-slate-500 bg-slate-200 px-2 py-0.5 rounded mt-1 inline-block">NIP: {{ $item->pengawas->nomor_induk }}</span>
+                                        @else
+                                            <span class="text-amber-600 italic text-sm font-semibold">Belum Dipilih</span>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-5 text-center">
                                         <button type="button" @click.prevent="showModal = true; imgSrc = '{{ asset('storage/' . $item->bukti_file) }}'" class="inline-flex min-h-[40px] w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-800 transition hover:border-blue-300 hover:bg-blue-100 focus:outline-none focus:ring-4 focus:ring-blue-100">
@@ -219,7 +223,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="px-6 py-14 text-center text-lg font-medium leading-relaxed text-slate-500">
+                                    <td colspan="5" class="px-6 py-14 text-center text-lg font-medium leading-relaxed text-slate-500">
                                         Belum ada riwayat kegiatan di tahun {{ $selectedYear }}. <br> Silakan buat laporan baru melalui formulir di atas.
                                     </td>
                                 </tr>
@@ -231,7 +235,6 @@
 
         </div>
 
-        <!-- MODAL POP-UP GAMBAR FOTO -->
         <div x-show="showModal" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/95 px-4 py-6 backdrop-blur-md transition-opacity sm:px-6" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
             <div @click="showModal = false" class="absolute inset-0 cursor-pointer"></div>
 
@@ -249,13 +252,11 @@
             </div>
         </div>
 
-        <!-- MODAL POP-UP NOTIFIKASI (Berhasil / Gagal) -->
         <div x-show="showAlert" style="display: none;" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/65 px-4 py-6 backdrop-blur-sm transition-opacity" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
             <div @click="showAlert = false" class="absolute inset-0 cursor-pointer"></div>
             <div class="relative z-10 w-full max-w-md transform overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-2xl transition-all sm:p-8" x-transition:enter="ease-out duration-300 delay-100" x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100">
 
                 @if(session('success'))
-                    <!-- Tampilan Jika Sukses -->
                     <div class="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 ring-1 ring-inset ring-emerald-100">
                         <svg class="h-10 w-10 text-emerald-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
@@ -264,7 +265,6 @@
                     <h3 class="mb-2 text-2xl font-bold text-slate-900">Berhasil!</h3>
                     <p class="mb-6 text-base leading-relaxed text-slate-600">{{ session('success') }}</p>
                 @elseif($errors->any())
-                    <!-- Tampilan Jika Gagal/Error -->
                     <div class="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-red-50 ring-1 ring-inset ring-red-100">
                         <svg class="h-10 w-10 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>

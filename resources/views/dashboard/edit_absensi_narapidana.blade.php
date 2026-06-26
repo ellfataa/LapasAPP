@@ -49,6 +49,18 @@
                                 <label for="jenis_kegiatan" class="mb-2 block text-sm font-bold text-slate-800 sm:text-base">Nama Kegiatan</label>
                                 <input id="jenis_kegiatan" name="jenis_kegiatan" type="text" class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm transition hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700" required value="{{ old('jenis_kegiatan', $absensi->jenis_kegiatan) }}" />
                             </div>
+
+                            <div class="md:col-span-2">
+                                <label for="pengawas_id" class="mb-2 block text-sm font-bold text-slate-800 sm:text-base">Penanggung Jawab PK/Pengawas</label>
+                                <select id="pengawas_id" name="pengawas_id" required class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm transition hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700 cursor-pointer">
+                                    <option value="" disabled selected>-- Pilih PK Lapas yang Mengampu Anda --</option>
+                                    @foreach($daftarPengawas as $pk)
+                                        <option value="{{ $pk->id }}" {{ old('pengawas_id') == $pk->id ? 'selected' : '' }}>
+                                            {{ $pk->nama }} (NIP/NRP: {{ $pk->nomor_induk }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
 
                         <!-- Area Ganti Foto -->
@@ -88,7 +100,7 @@
                         </a>
 
                         <!-- Tombol Simpan -->
-                        <button type="submit" class="inline-flex min-h-[48px] w-full items-center justify-center rounded-xl bg-blue-900 px-7 py-3 text-base font-bold text-white shadow-sm transition hover:bg-blue-800 hover:shadow-md focus:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-200 sm:w-auto sm:text-lg">
+                        <button type="submit" class="inline-flex min-h-[48px] w-full items-center justify-center rounded-xl bg-emerald-700 px-7 py-3 text-base font-bold text-white shadow-sm transition hover:bg-emerald-800 hover:shadow-md focus:bg-emerald-800 focus:outline-none focus:ring-4 focus:ring-emerald-200 sm:w-auto sm:text-lg">
                             <!-- Icon SVG: Check/Save -->
                             <svg class="mr-2 h-5 w-5 shrink-0 sm:h-6 sm:w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>

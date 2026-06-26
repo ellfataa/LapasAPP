@@ -35,7 +35,7 @@ class KinerjaPkController extends Controller
         $kategoriList = ['litmas', 'pendampingan', 'pembimbingan', 'pengawasan'];
 
         foreach ($kategoriList as $kategori) {
-            // PERBAIKAN: Jika belum ada data lama, FILE WAJIB DIUNGGAH (Required)
+            // Jika belum ada data lama, FILE WAJIB DIUNGGAH
             if (!$existingData || empty(json_decode($existingData->{"{$kategori}_file"}, true))) {
                 $rules["{$kategori}_file"] = ['required', 'array'];
             } else {
@@ -43,6 +43,9 @@ class KinerjaPkController extends Controller
             }
             // Validasi format dan ukuran file
             $rules["{$kategori}_file.*"] = ['file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'];
+
+            // TAMBAHAN: Validasi untuk Link G-Drive (Opsional tapi harus berupa URL yang valid jika diisi)
+            $rules["{$kategori}_link"] = ['nullable', 'url', 'max:255'];
         }
 
         // 3. Eksekusi Validasi Ketat
@@ -51,7 +54,8 @@ class KinerjaPkController extends Controller
             'numeric' => 'Kolom harus berupa angka.',
             'min' => 'Nilai tidak boleh kurang dari 0.',
             'mimes' => 'Format file bukti harus berupa JPG, JPEG, PNG, atau PDF.',
-            'max' => 'Ukuran file maksimal adalah 10MB per file.'
+            'max' => 'Ukuran file maksimal adalah 10MB per file.',
+            'url' => 'Format link G-Drive/Spreadsheet tidak valid (harus diawali http:// atau https://).'
         ]);
 
         $dataToSave = [];
@@ -64,6 +68,9 @@ class KinerjaPkController extends Controller
 
             $dataToSave["{$kategori}_kuota"] = $kuota;
             $dataToSave["{$kategori}_berhasil"] = $berhasil;
+
+            // TAMBAHAN: Simpan link G-Drive
+            $dataToSave["{$kategori}_link"] = $request->input("{$kategori}_link");
 
             // Kalkulasi
             $persen = ($kuota > 0) ? ($berhasil / $kuota) * 100 : 0;
@@ -122,6 +129,6 @@ class KinerjaPkController extends Controller
         $namaBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
         $bulanNama = $namaBulan[$request->bulan - 1] ?? $request->bulan;
 
-        return redirect()->back()->with('success', 'Kinerja bulan ' . $bulanNama . ' ' . $request->tahun . ' berhasil disimpan.');
+        return redirect()->back()->with('success', 'Kinerja bulan ' . $bulanNama . ' ' . $request->tahun . ' berhasil disimpan. Predikat: ' . $dataToSave['predikat']);
     }
 }
