@@ -41,8 +41,13 @@ Route::middleware('auth')->group(function () {
         // Halaman Utama Dashboard Admin
         Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('dashboard.admin');
 
-        // Hapus Data Pengguna
+        // Manajemen Pengguna (Update & Delete)
+        Route::put('/admin/user/{id}', [AdminController::class, 'updateUser'])->name('admin.user.update');
         Route::delete('/admin/user/{id}', [AdminController::class, 'destroyUser'])->name('admin.user.destroy');
+
+        // Manajemen Data Kinerja & Absensi
+        Route::delete('/admin/kinerja/{id}', [AdminController::class, 'destroyKinerja'])->name('admin.kinerja.destroy');
+        Route::delete('/admin/absensi/{id}', [AdminController::class, 'destroyAbsensi'])->name('admin.absensi.destroy');
     });
 
     // ====================================================================
