@@ -3,7 +3,11 @@
     class="relative z-50 border-b border-blue-800/70 bg-blue-900 shadow-lg shadow-slate-900/10"
 >
     @php
-        if (Auth::user()->role === 'admin' || Auth::user()->role === 'pengawas') {
+        $role = Auth::user()->role;
+        if ($role === 'admin') {
+            $urlDashboard = route('dashboard.admin');
+            $isDashboardActive = request()->routeIs('dashboard.admin');
+        } elseif ($role === 'pengawas') {
             $urlDashboard = route('dashboard.pengawas');
             $isDashboardActive = request()->routeIs('dashboard.pengawas');
         } else {
@@ -15,7 +19,6 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex h-[72px] items-center justify-between">
 
-            <!-- Logo dan Navigasi Utama -->
             <div class="flex min-w-0 items-center">
                 <div class="flex shrink-0 items-center">
                     <a
@@ -31,7 +34,6 @@
                     </a>
                 </div>
 
-                <!-- Navigasi Desktop -->
                 <div class="hidden sm:ms-8 sm:flex sm:items-center">
                     <a
                         href="{{ $urlDashboard }}"
@@ -61,7 +63,6 @@
                 </div>
             </div>
 
-            <!-- Dropdown Pengguna Desktop -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
@@ -164,7 +165,6 @@
                 </x-dropdown>
             </div>
 
-            <!-- Tombol Menu Mobile -->
             <div class="flex items-center sm:hidden">
                 <button
                     type="button"
@@ -196,7 +196,6 @@
         </div>
     </div>
 
-    <!-- Navigasi Mobile -->
     <div
         x-cloak
         x-show="open"
@@ -237,7 +236,6 @@
         </div>
 
         <div class="border-t border-white/10 px-4 pb-5 pt-4">
-            <!-- Informasi Pengguna -->
             <div class="rounded-xl border border-white/10 bg-white/10 p-4">
                 <div class="flex items-center gap-3">
                     <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15 text-white ring-1 ring-inset ring-white/20">
@@ -262,13 +260,12 @@
                             {{ Auth::user()->nama }}
                         </div>
                         <div class="truncate text-sm text-blue-200">
-                            {{ Auth::user()->email }}
+                            {{ Auth::user()->email ?? Auth::user()->nomor_induk }}
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Menu Pengguna Mobile -->
             <div class="mt-3 space-y-1">
                 <a
                     href="{{ route('profile.edit') }}"

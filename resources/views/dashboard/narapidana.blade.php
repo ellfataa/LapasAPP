@@ -188,7 +188,7 @@
                             <tr>
                                 <th scope="col" class="w-40 px-6 py-4 text-sm font-bold uppercase tracking-wide text-slate-700">Tanggal</th>
                                 <th scope="col" class="px-6 py-4 text-sm font-bold uppercase tracking-wide text-slate-700">Nama Kegiatan</th>
-                                <th scope="col" class="w-56 px-6 py-4 text-sm font-bold uppercase tracking-wide text-slate-700">Pengawas / PK</th>
+                                <th scope="col" class="w-56 px-6 py-4 text-sm font-bold uppercase tracking-wide text-slate-700">PK/Pengawas</th>
                                 <th scope="col" class="w-36 px-6 py-4 text-center text-sm font-bold uppercase tracking-wide text-slate-700">Bukti Foto</th>
                                 <th scope="col" class="w-36 px-6 py-4 text-center text-sm font-bold uppercase tracking-wide text-slate-700">Pengaturan</th>
                             </tr>
