@@ -16,7 +16,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'identitas' => ['required', 'string'], // Ini akan diisi Nomor Induk
+            'identitas' => ['required', 'string'],
             'password' => ['required', 'string'],
         ];
     }
@@ -25,7 +25,6 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        // Paksa login menggunakan 'nomor_induk' dan 'password'
         if (! Auth::attempt(['nomor_induk' => $this->input('identitas'), 'password' => $this->input('password')], $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 

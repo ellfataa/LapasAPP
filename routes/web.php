@@ -11,7 +11,7 @@ use App\Http\Controllers\Auth\GoogleAuthController;
 // 1. RUTE UTAMA: Otomatis arahkan sesuai status login
 Route::get('/', function () {
     if (Auth::check()) {
-        return redirect()->route('dashboard'); // Lempar ke terminal pengatur role
+        return redirect()->route('dashboard');
     }
     return redirect('/login');
 });
@@ -22,10 +22,7 @@ Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
 
 // Grup Route yang butuh Login
 Route::middleware('auth')->group(function () {
-
-    // ====================================================================
     // RUTE TERMINAL (Solusi agar sistem Laravel tidak bingung)
-    // ====================================================================
     Route::get('/dashboard', function () {
         $role = Auth::user()->role;
         if ($role === 'admin') return redirect()->route('dashboard.admin');
@@ -36,20 +33,23 @@ Route::middleware('auth')->group(function () {
 
     // ====================================================================
     // 1. ROUTE KHUSUS ADMIN
-    // ====================================================================
     Route::middleware('role:admin')->group(function () {
-        // Halaman Dashboard Utama
         Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('dashboard.admin');
 
-        // Manajemen Pengawas / PK (Halaman & Aksi)
+        // Manajemen PK/Pengawas
         Route::get('/admin/pengawas', [AdminController::class, 'pengawasIndex'])->name('admin.pengawas.index');
-        Route::get('/admin/pengawas/create', [AdminController::class, 'pengawasCreate'])->name('admin.pengawas.create'); // Baru
-        Route::get('/admin/pengawas/{id}/edit', [AdminController::class, 'pengawasEdit'])->name('admin.pengawas.edit'); // Baru
+        Route::get('/admin/pengawas/create', [AdminController::class, 'pengawasCreate'])->name('admin.pengawas.create');
+        Route::get('/admin/pengawas/{id}/edit', [AdminController::class, 'pengawasEdit'])->name('admin.pengawas.edit');
         Route::post('/admin/pengawas', [AdminController::class, 'storePengawas'])->name('admin.pengawas.store');
         Route::post('/admin/pengawas/import', [AdminController::class, 'importPengawas'])->name('admin.pengawas.import');
 
-        // Manajemen Halaman Lain (Narapidana, Kinerja, Absensi)
+        // Manajemen Klien/Narapidana
         Route::get('/admin/narapidana', [AdminController::class, 'narapidanaIndex'])->name('admin.narapidana.index');
+        Route::get('/admin/narapidana/create', [AdminController::class, 'narapidanaCreate'])->name('admin.narapidana.create');
+        Route::get('/admin/narapidana/{id}/edit', [AdminController::class, 'narapidanaEdit'])->name('admin.narapidana.edit');
+        Route::post('/admin/narapidana', [AdminController::class, 'storeNarapidana'])->name('admin.narapidana.store');
+
+        // Manajemen Halaman Lain (Kinerja, Absensi)
         Route::get('/admin/kinerja', [AdminController::class, 'kinerjaIndex'])->name('admin.kinerja.index');
         Route::get('/admin/absensi', [AdminController::class, 'absensiIndex'])->name('admin.absensi.index');
 
@@ -57,14 +57,12 @@ Route::middleware('auth')->group(function () {
         Route::put('/admin/user/{id}', [AdminController::class, 'updateUser'])->name('admin.user.update');
         Route::delete('/admin/user/{id}', [AdminController::class, 'destroyUser'])->name('admin.user.destroy');
 
-        // Manajemen Data Kinerja & Absensi
         Route::delete('/admin/kinerja/{id}', [AdminController::class, 'destroyKinerja'])->name('admin.kinerja.destroy');
         Route::delete('/admin/absensi/{id}', [AdminController::class, 'destroyAbsensi'])->name('admin.absensi.destroy');
     });
 
     // ====================================================================
-    // 2. ROUTE KHUSUS PENGAWAS / PK
-    // ====================================================================
+    // 2. ROUTE KHUSUS PK/PENGAWAS
     Route::middleware('role:pengawas')->group(function () {
         Route::get('/pengawas/dashboard', [AbsensiController::class, 'indexPengawas'])->name('dashboard.pengawas');
 
@@ -72,8 +70,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // ====================================================================
-    // 3. ROUTE KHUSUS MANTAN NAPI / NARAPIDANA
-    // ====================================================================
+    // 3. ROUTE KHUSUS KLIEN/NARAPIDANA
     Route::middleware('role:narapidana')->group(function () {
         Route::get('/narapidana/dashboard', [AbsensiController::class, 'indexNarapidana'])->name('dashboard.narapidana');
         Route::post('/narapidana/absensi', [AbsensiController::class, 'store'])->name('absensi.store');
@@ -84,7 +81,6 @@ Route::middleware('auth')->group(function () {
 
     // ====================================================================
     // ROUTE PROFILE
-    // ====================================================================
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

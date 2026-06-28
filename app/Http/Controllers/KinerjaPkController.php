@@ -44,7 +44,7 @@ class KinerjaPkController extends Controller
             // Validasi format dan ukuran file
             $rules["{$kategori}_file.*"] = ['file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'];
 
-            // TAMBAHAN: Validasi untuk Link G-Drive (Opsional tapi harus berupa URL yang valid jika diisi)
+            // Validasi untuk Link G-Drive (Opsional tapi harus berupa URL yang valid jika diisi)
             $rules["{$kategori}_link"] = ['nullable', 'url', 'max:255'];
         }
 
@@ -62,14 +62,14 @@ class KinerjaPkController extends Controller
         $totalPersen = 0;
 
         foreach ($kategoriList as $kategori) {
-            // Kunci kuota Litmas wajib 12 dari sisi Server
+            // Kunci kuota Litmas wajib 12
             $kuota = ($kategori === 'litmas') ? 12 : $request->input("{$kategori}_kuota", 0);
             $berhasil = $request->input("{$kategori}_berhasil", 0);
 
             $dataToSave["{$kategori}_kuota"] = $kuota;
             $dataToSave["{$kategori}_berhasil"] = $berhasil;
 
-            // TAMBAHAN: Simpan link G-Drive
+            // Simpan link G-Drive
             $dataToSave["{$kategori}_link"] = $request->input("{$kategori}_link");
 
             // Kalkulasi

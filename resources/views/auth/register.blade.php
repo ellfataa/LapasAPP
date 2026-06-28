@@ -274,12 +274,10 @@
     </div>
 
     <script>
-        // Restrict Nama Lengkap to letters and spaces only
         document.getElementById('nama').addEventListener('input', function(e) {
             this.value = this.value.replace(/[^a-zA-Z\s]/g, '');
         });
 
-        // Restrict Nomor Induk to numbers only
         document.getElementById('nomor_induk').addEventListener('input', function(e) {
             this.value = this.value.replace(/[^0-9]/g, '');
         });

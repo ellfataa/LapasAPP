@@ -3,17 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\AbsensiKegiatan;
-use App\Models\User; // TAMBAHAN: Import model User
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class AbsensiController extends Controller
 {
-    // ======================================================================
     // BAGIAN 1: FITUR MANTAN NAPI / NARAPIDANA
-    // ======================================================================
-
     public function indexNarapidana(Request $request)
     {
         $userId = Auth::id();
@@ -43,7 +40,6 @@ class AbsensiController extends Controller
             ->orderBy('tanggal_waktu', 'desc')
             ->get();
 
-        // Tambahkan variabel $daftarPengawas ke compact
         return view('dashboard.narapidana', compact('riwayat', 'availableYears', 'selectedYear', 'daftarPengawas'));
     }
 
@@ -52,7 +48,7 @@ class AbsensiController extends Controller
         $request->validate([
             'tanggal'        => ['required', 'date', 'before_or_equal:today'],
             'jenis_kegiatan' => ['required', 'string', 'max:255'],
-            'pengawas_id'    => ['required', 'exists:users,id'], // PERBAIKAN: Validasi Pengawas
+            'pengawas_id'    => ['required', 'exists:users,id'],
             'bukti_file'     => ['required', 'image', 'mimes:jpeg,jpg,png', 'max:10240'],
         ], [
             'tanggal.before_or_equal' => 'Tanggal kegiatan tidak boleh melebihi hari ini.',
@@ -65,7 +61,7 @@ class AbsensiController extends Controller
 
         AbsensiKegiatan::create([
             'narapidana_id'  => Auth::id(),
-            'pengawas_id'    => $request->pengawas_id, // PERBAIKAN: Simpan ID Pengawas
+            'pengawas_id'    => $request->pengawas_id,
             'tanggal_waktu'  => $request->tanggal,
             'jenis_kegiatan' => $request->jenis_kegiatan,
             'bukti_file'     => $path,
@@ -89,14 +85,14 @@ class AbsensiController extends Controller
         $request->validate([
             'tanggal'        => ['required', 'date', 'before_or_equal:today'],
             'jenis_kegiatan' => ['required', 'string', 'max:255'],
-            'pengawas_id'    => ['required', 'exists:users,id'], // Validasi update
+            'pengawas_id'    => ['required', 'exists:users,id'],
             'bukti_file'     => ['nullable', 'image', 'mimes:jpeg,jpg,png', 'max:10240'],
         ]);
 
         $dataToUpdate = [
             'tanggal_waktu'  => $request->tanggal,
             'jenis_kegiatan' => $request->jenis_kegiatan,
-            'pengawas_id'    => $request->pengawas_id, // Update pengawas id
+            'pengawas_id'    => $request->pengawas_id,
         ];
 
         if ($request->hasFile('bukti_file')) {
@@ -113,15 +109,11 @@ class AbsensiController extends Controller
         return redirect()->route('dashboard.narapidana')->with('success', 'Data kegiatan berhasil diperbarui!');
     }
 
-    // ======================================================================
-    // BAGIAN 2: FITUR PENGAWAS / PK
-    // ======================================================================
-
+    // BAGIAN 2: FITUR PK/PENGAWAS
     public function indexPengawas(Request $request)
     {
         $userId = Auth::id();
 
-        // PERBAIKAN KRUSIAL: Filter agar HANYA mengambil Absensi yang ditujukan ke Pengawas yang sedang login!
         $query = AbsensiKegiatan::with('narapidana')->where('pengawas_id', $userId);
 
         // 1. Ambil ketersediaan Tahun (Juga harus difilter berdasarkan pengawas ini)

@@ -20,7 +20,7 @@ class RegisteredUserController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        // 1. Validasi Input (Hapus Email)
+        // 1. Validasi Input
         $request->validate([
             'nama' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z\s]+$/'],
             'nomor_induk' => ['required', 'string', 'max:18', 'regex:/^[0-9]+$/', 'unique:'.User::class],
@@ -32,7 +32,7 @@ class RegisteredUserController extends Controller
             'nomor_induk.unique' => 'Nomor Induk ini sudah terdaftar di sistem.'
         ]);
 
-        // 2. Simpan Data (Email dikosongkan, Role default narapidana)
+        // 2. Simpan Data (Role default narapidana)
         $user = User::create([
             'nama' => $request->nama,
             'nomor_induk' => $request->nomor_induk,

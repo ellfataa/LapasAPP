@@ -325,7 +325,6 @@
     </div>
 
     <script>
-        // Restrict Nomor Induk to numbers only
         document.getElementById('identitas').addEventListener('input', function(e) {
             this.value = this.value.replace(/[^0-9]/g, '');
         });

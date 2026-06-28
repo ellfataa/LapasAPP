@@ -2,7 +2,6 @@
     <x-slot name="header">
         <div class="bapas-narapidana-header flex items-center gap-4 bg-slate-100">
             <div class="hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-900 text-white shadow-sm sm:flex">
-                <!-- Icon SVG: Pencil/Edit -->
                 <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                 </svg>
@@ -14,7 +13,7 @@
         </div>
     </x-slot>
 
-    <!-- Menambahkan state 'showAlert' untuk Modal Pop-up Notifikasi -->
+    <!-- Modal Pop-up Notifikasi -->
     <div class="min-h-screen bg-slate-100 py-6 sm:py-10" x-data="{ showAlert: {{ session('success') || $errors->any() ? 'true' : 'false' }} }">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">

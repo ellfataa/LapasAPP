@@ -24,7 +24,6 @@ class AbsensiKegiatan extends Model
         return $this->belongsTo(User::class, 'narapidana_id', 'id');
     }
 
-    // TAMBAHAN BARU: Relasi ke Pengawas
     public function pengawas(): BelongsTo
     {
         return $this->belongsTo(User::class, 'pengawas_id', 'id');
