@@ -11,15 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Schema::create('users', function (Blueprint $table) {
-        //     $table->id();
-        //     $table->string('name');
-        //     $table->string('email')->unique();
-        //     $table->timestamp('email_verified_at')->nullable();
-        //     $table->string('password');
-        //     $table->rememberToken();
-        //     $table->timestamps();
-        // });
+        Schema::create('users', function (Blueprint $table) {
+            $table->engine = 'InnoDB'; // Wajib ditambahkan
+            $table->id(); // Ini adalah bigint unsigned (Auto Increment)
+            $table->string('nama');
+            $table->string('nomor_induk')->unique(); // NIK/NIP/NRP
+            $table->string('email')->nullable()->unique();
+            $table->string('role'); // admin, pengawas, narapidana
+            $table->string('password');
+            $table->string('google_id')->nullable();
+            $table->rememberToken();
+            $table->timestamps();
+        });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
