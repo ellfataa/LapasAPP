@@ -38,8 +38,18 @@ Route::middleware('auth')->group(function () {
     // 1. ROUTE KHUSUS ADMIN
     // ====================================================================
     Route::middleware('role:admin')->group(function () {
-        // Halaman Utama Dashboard Admin
+        // Halaman Dashboard Utama
         Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('dashboard.admin');
+
+        // Halaman Detail Spesifik Sidebar
+        Route::get('/admin/pengawas', [AdminController::class, 'pengawasIndex'])->name('admin.pengawas.index');
+        Route::get('/admin/narapidana', [AdminController::class, 'narapidanaIndex'])->name('admin.narapidana.index');
+        Route::get('/admin/kinerja', [AdminController::class, 'kinerjaIndex'])->name('admin.kinerja.index');
+        Route::get('/admin/absensi', [AdminController::class, 'absensiIndex'])->name('admin.absensi.index');
+
+        // Aksi Khusus PK (Tambah & Import)
+        Route::post('/admin/pengawas', [AdminController::class, 'storePengawas'])->name('admin.pengawas.store');
+        Route::post('/admin/pengawas/import', [AdminController::class, 'importPengawas'])->name('admin.pengawas.import');
 
         // Manajemen Pengguna (Update & Delete)
         Route::put('/admin/user/{id}', [AdminController::class, 'updateUser'])->name('admin.user.update');

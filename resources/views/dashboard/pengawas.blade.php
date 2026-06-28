@@ -500,7 +500,7 @@
                                     </td>
                                     <td class="px-6 py-5 align-top">
                                         <span class="block text-lg font-bold text-blue-950">{{ $item->narapidana->nama }}</span>
-                                        <span class="mt-1 inline-block rounded-md bg-slate-100 px-2.5 py-1 text-sm font-semibold text-slate-600 ring-1 ring-inset ring-slate-200">NIK: {{ $item->narapidana->nomor_induk }}</span>
+                                        <span class="mt-1 inline-block rounded-md bg-slate-100 px-2.5 py-1 text-sm font-semibold text-slate-600 ring-1 ring-inset ring-slate-200">NIK/Nomor Registrasi: {{ $item->narapidana->nomor_induk }}</span>
                                     </td>
                                     <td class="px-6 py-5 leading-relaxed align-top">
                                         {{ $item->jenis_kegiatan }}

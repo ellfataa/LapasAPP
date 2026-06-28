@@ -89,7 +89,7 @@
                     <div>
                         <x-input-label
                             for="nomor_induk"
-                            value="Nomor Induk (NRP/NIP/NIK)"
+                            value="Nomor Induk (NRP/NIP/NIK/Nomor Registrasi)"
                             class="mb-2 block text-sm font-bold text-slate-800"
                         />
 

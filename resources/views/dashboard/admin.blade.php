@@ -1,293 +1,230 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center gap-4 bg-slate-100">
-            <div class="hidden sm:flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-900 text-white shadow-sm">
-                <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
-                </svg>
-            </div>
-            <h2 class="font-bold text-xl sm:text-2xl md:text-3xl text-slate-900 leading-tight tracking-tight">
-                Dashboard Administrator
+            <h2 class="font-bold text-xl sm:text-2xl text-slate-900 leading-tight tracking-tight">
+                Dashboard Utama Administrator, Selamat Datang {{ Auth::user()->nama }}!
             </h2>
         </div>
     </x-slot>
 
-    <div class="min-h-screen bg-slate-100 py-6 sm:py-10" x-data="{
-        showAlert: {{ session('success') || $errors->any() ? 'true' : 'false' }},
-        showEditModal: false,
-        showImageModal: false,
-        imgSrc: '',
-        editData: { id: '', nama: '', nomor_induk: '', email: '', role: '' },
-        editFormAction: '',
-        openEditUser(user) {
-            this.editData = user;
-            this.editFormAction = '/admin/user/' + user.id;
-            this.showEditModal = true;
-        }
-    }">
-        <div class="mx-auto max-w-7xl space-y-6 px-4 sm:space-y-8 sm:px-6 lg:px-8">
+    <div x-data="{
+            sidebarOpen: false,
+            showImageModal: false,
+            images: [],
+            currentIndex: 0,
+            openImageModal(imgArray) {
+                this.images = imgArray;
+                this.currentIndex = 0;
+                this.showImageModal = true;
+            },
+            nextImage() {
+                if (this.currentIndex < this.images.length - 1) this.currentIndex++;
+            },
+            prevImage() {
+                if (this.currentIndex > 0) this.currentIndex--;
+            }
+         }"
+         @toggle-admin-sidebar.window="sidebarOpen = !sidebarOpen"
+         class="flex min-h-[calc(100vh-73px)] items-stretch bg-slate-100 relative">
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center gap-5">
-                    <div class="bg-blue-100 text-blue-700 p-4 rounded-xl">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+        @include('admin.layouts.sidebar')
+
+        <main class="flex-1 flex flex-col min-w-0">
+            <div class="p-4 sm:p-6 lg:p-8 space-y-8 flex-1 overflow-y-auto">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center gap-5">
+                        <div class="bg-indigo-100 text-indigo-700 p-4 rounded-xl">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-500 uppercase tracking-wider">Total PK/Pengawas</p>
+                            <p class="text-3xl font-extrabold text-slate-900">{{ $totalPengawas }}</p>
+                        </div>
                     </div>
-                    <div>
-                        <p class="text-sm font-bold text-slate-500 uppercase tracking-wider">Total PK / Pengawas</p>
-                        <p class="text-3xl font-extrabold text-slate-900">{{ $totalPengawas }}</p>
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center gap-5">
+                        <div class="bg-emerald-100 text-emerald-700 p-4 rounded-xl">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-500 uppercase tracking-wider">Total Klien/Narapidana</p>
+                            <p class="text-3xl font-extrabold text-slate-900">{{ $totalNarapidana }}</p>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center gap-5">
+                        <div class="bg-amber-100 text-amber-700 p-4 rounded-xl">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-500 uppercase tracking-wider">Total Absensi/Laporan Wajib</p>
+                            <p class="text-3xl font-extrabold text-slate-900">{{ $totalAbsensi }}</p>
+                        </div>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center gap-5">
-                    <div class="bg-emerald-100 text-emerald-700 p-4 rounded-xl">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                    <div class="flex flex-col gap-4 border-b border-slate-200 bg-white px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
+                        <h3 class="flex items-center gap-3 text-lg font-bold text-slate-900">
+                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-800"><svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></span>
+                            Kalender Absensi/Laporan Wajib (Seluruh Klien/Narapidana)
+                        </h3>
+                        <form method="GET" action="{{ route('dashboard.admin') }}" class="flex">
+                            <select name="year" onchange="this.form.submit()" class="rounded-xl border-slate-300 text-sm font-bold text-slate-800 focus:ring-0">
+                                @foreach($availableYears as $year) <option value="{{ $year }}" {{ $selectedYear == $year ? 'selected' : '' }}>Tahun {{ $year }}</option> @endforeach
+                            </select>
+                        </form>
                     </div>
-                    <div>
-                        <p class="text-sm font-bold text-slate-500 uppercase tracking-wider">Total Narapidana</p>
-                        <p class="text-3xl font-extrabold text-slate-900">{{ $totalNarapidana }}</p>
-                    </div>
-                </div>
 
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center gap-5">
-                    <div class="bg-amber-100 text-amber-700 p-4 rounded-xl">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    @php
+                        $bulans = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                        $absensiMap = [];
+                        foreach($absensiKalender as $rekam) {
+                            $tgl = \Carbon\Carbon::parse($rekam->tanggal_waktu);
+                            $absensiMap[$tgl->month][$tgl->day][] = $rekam;
+                        }
+                    @endphp
+
+                    <div class="p-4 sm:p-6">
+                        <div class="custom-scrollbar overflow-x-auto pb-4 snap-x snap-mandatory">
+                            <div class="flex min-w-max gap-4 px-1 pb-1">
+                                @for($m = 1; $m <= 12; $m++)
+                                    <article class="w-64 shrink-0 snap-start overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm sm:w-72">
+                                        <h4 class="border-b border-slate-200 bg-slate-50 px-4 py-3 text-center text-sm font-bold text-slate-800">{{ $bulans[$m-1] }}</h4>
+                                        <div class="grid grid-cols-5 gap-1.5 p-3">
+                                            @php $daysInMonth = \Carbon\Carbon::create($selectedYear, $m)->daysInMonth; @endphp
+                                            @for($d = 1; $d <= $daysInMonth; $d++)
+                                                @if(isset($absensiMap[$m][$d]))
+                                                    @php
+                                                        $count = count($absensiMap[$m][$d]);
+                                                        $first = $absensiMap[$m][$d][0];
+
+                                                        // Buat array JSON berisi semua URL foto untuk tanggal ini
+                                                        $imageUrls = collect($absensiMap[$m][$d])->map(function($item) {
+                                                            return asset('storage/' . $item->bukti_file);
+                                                        })->toJson();
+                                                    @endphp
+                                                    <button type="button" @click.prevent="openImageModal({{ $imageUrls }})" class="group relative block aspect-square w-full overflow-hidden rounded-lg border border-emerald-400 bg-emerald-50 shadow-sm transition hover:scale-105 hover:ring-2 hover:ring-emerald-300">
+                                                        <img src="{{ asset('storage/' . $first->bukti_file) }}" alt="Bukti" class="h-full w-full object-cover">
+                                                        @if($count > 1)
+                                                            <span class="absolute bottom-0 right-0 bg-blue-900/90 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-tl-md">+{{ $count - 1 }}</span>
+                                                        @endif
+                                                    </button>
+                                                @else
+                                                    <div class="flex aspect-square w-full items-center justify-center rounded-lg bg-slate-50 text-xs font-semibold text-slate-400">{{ $d }}</div>
+                                                @endif
+                                            @endfor
+                                        </div>
+                                    </article>
+                                @endfor
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <p class="text-sm font-bold text-slate-500 uppercase tracking-wider">Total Laporan Absensi</p>
-                        <p class="text-3xl font-extrabold text-slate-900">{{ $totalAbsensi }}</p>
+                </section>
+
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                        <div class="bg-indigo-900 px-5 py-4 flex justify-between items-center text-white">
+                            <h3 class="font-bold text-base">5 Akun PK/Pengawas Terbaru</h3>
+                            <a href="{{ route('admin.pengawas.index') }}" class="text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors">Lihat Semua</a>
+                        </div>
+                        <div class="overflow-x-auto p-4 flex-1">
+                            <table class="w-full text-left text-sm text-slate-700">
+                                <thead><tr class="text-slate-500 border-b border-slate-200"><th class="pb-2">Nama PK/Pengawas</th><th class="pb-2 text-right">Nomor Induk</th></tr></thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    @forelse($ringkasanPengawas as $pk)
+                                        <tr><td class="py-3 font-bold text-slate-900">{{ $pk->nama }}</td><td class="py-3 text-right">{{ $pk->nomor_induk }}</td></tr>
+                                    @empty
+                                        <tr><td colspan="2" class="py-4 text-center italic text-slate-400">Belum ada data</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                        <div class="bg-emerald-800 px-5 py-4 flex justify-between items-center text-white">
+                            <h3 class="font-bold text-base">5 Klien/Narapidana Terbaru</h3>
+                            <a href="{{ route('admin.narapidana.index') }}" class="text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors">Lihat Semua</a>
+                        </div>
+                        <div class="overflow-x-auto p-4 flex-1">
+                            <table class="w-full text-left text-sm text-slate-700">
+                                <thead><tr class="text-slate-500 border-b border-slate-200"><th class="pb-2">Nama Klien/Narapidana</th><th class="pb-2 text-right">Nomor Induk/Registrasi</th></tr></thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    @forelse($ringkasanNarapidana as $napi)
+                                        <tr><td class="py-3 font-bold text-slate-900">{{ $napi->nama }}</td><td class="py-3 text-right">{{ $napi->nomor_induk }}</td></tr>
+                                    @empty
+                                        <tr><td colspan="2" class="py-4 text-center italic text-slate-400">Belum ada data</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                        <div class="bg-amber-600 px-5 py-4 flex justify-between items-center text-white">
+                            <h3 class="font-bold text-base">5 Laporan Kinerja PK Terbaru</h3>
+                            <a href="{{ route('admin.kinerja.index') }}" class="text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors">Lihat Semua</a>
+                        </div>
+                        <div class="overflow-x-auto p-4 flex-1">
+                            <table class="w-full text-left text-sm text-slate-700">
+                                <thead><tr class="text-slate-500 border-b border-slate-200"><th class="pb-2">PK Lapor</th><th class="pb-2">Bulan</th><th class="pb-2 text-right">Predikat</th></tr></thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    @forelse($ringkasanKinerja as $kinerja)
+                                        <tr><td class="py-3 font-bold text-slate-900">{{ $kinerja->pengawas->nama ?? '-' }}</td><td class="py-3">{{ $kinerja->bulan }}/{{ $kinerja->tahun }}</td><td class="py-3 text-right font-bold text-amber-700">{{ $kinerja->predikat }}</td></tr>
+                                    @empty
+                                        <tr><td colspan="3" class="py-4 text-center italic text-slate-400">Belum ada data</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                        <div class="bg-teal-700 px-5 py-4 flex justify-between items-center text-white">
+                            <h3 class="font-bold text-base">5 Absensi/Laporan Wajib Terbaru</h3>
+                            <a href="{{ route('admin.absensi.index') }}" class="text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors">Lihat Semua</a>
+                        </div>
+                        <div class="overflow-x-auto p-4 flex-1">
+                            <table class="w-full text-left text-sm text-slate-700">
+                                <thead><tr class="text-slate-500 border-b border-slate-200"><th class="pb-2">Tanggal</th><th class="pb-2">Nama Klien</th><th class="pb-2 text-right">PK/Pengawas</th></tr></thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    @forelse($ringkasanAbsensi as $absen)
+                                        <tr><td class="py-3 font-bold">{{ \Carbon\Carbon::parse($absen->tanggal_waktu)->format('d/m/y') }}</td><td class="py-3 font-bold text-slate-900">{{ $absen->narapidana->nama ?? '-' }}</td><td class="py-3 text-right text-xs">{{ $absen->pengawas->nama ?? 'Belum Dipilih' }}</td></tr>
+                                    @empty
+                                        <tr><td colspan="3" class="py-4 text-center italic text-slate-400">Belum ada data</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                 </div>
             </div>
+        </main>
 
-            <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="bg-blue-900 text-white px-6 py-4 flex justify-between items-center">
-                    <h3 class="font-bold text-lg">Manajemen Akun Pengawas / PK</h3>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-slate-700">
-                        <thead class="bg-slate-50 border-b border-slate-200 text-sm font-bold uppercase tracking-wide">
-                            <tr>
-                                <th class="px-6 py-4">No</th>
-                                <th class="px-6 py-4">Nama Lengkap</th>
-                                <th class="px-6 py-4">NIP / Identitas</th>
-                                <th class="px-6 py-4">Email</th>
-                                <th class="px-6 py-4 text-center">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-200">
-                            @forelse($daftarPengawas as $pengawas)
-                            <tr class="hover:bg-slate-50 transition-colors">
-                                <td class="px-6 py-4 font-semibold">{{ $loop->iteration }}</td>
-                                <td class="px-6 py-4 font-bold text-slate-900">{{ $pengawas->nama }}</td>
-                                <td class="px-6 py-4">{{ $pengawas->nomor_induk }}</td>
-                                <td class="px-6 py-4">{{ $pengawas->email ?? '-' }}</td>
-                                <td class="px-6 py-4 text-center space-x-2">
-                                    <button @click="openEditUser({{ $pengawas->toJson() }})" class="bg-blue-100 text-blue-700 hover:bg-blue-200 px-4 py-2 rounded-lg text-sm font-bold transition-colors">Edit</button>
-                                    <form action="{{ route('admin.user.destroy', $pengawas->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Hapus akun Pengawas ini? Semua data kinerjanya juga akan ikut terhapus.');">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="bg-red-100 text-red-700 hover:bg-red-200 px-4 py-2 rounded-lg text-sm font-bold transition-colors">Hapus</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr><td colspan="5" class="text-center py-6 text-slate-500">Tidak ada data Pengawas.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+        <div x-cloak x-show="showImageModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/95 px-4 backdrop-blur-md">
+            <div @click="showImageModal = false" class="absolute inset-0 cursor-pointer"></div>
 
-            <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="bg-emerald-800 text-white px-6 py-4 flex justify-between items-center">
-                    <h3 class="font-bold text-lg">Manajemen Akun Klien / Narapidana</h3>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-slate-700">
-                        <thead class="bg-slate-50 border-b border-slate-200 text-sm font-bold uppercase tracking-wide">
-                            <tr>
-                                <th class="px-6 py-4">No</th>
-                                <th class="px-6 py-4">Nama Lengkap</th>
-                                <th class="px-6 py-4">NIK / Identitas</th>
-                                <th class="px-6 py-4">Email</th>
-                                <th class="px-6 py-4 text-center">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-200">
-                            @forelse($daftarNarapidana as $napi)
-                            <tr class="hover:bg-slate-50 transition-colors">
-                                <td class="px-6 py-4 font-semibold">{{ $loop->iteration }}</td>
-                                <td class="px-6 py-4 font-bold text-slate-900">{{ $napi->nama }}</td>
-                                <td class="px-6 py-4">{{ $napi->nomor_induk }}</td>
-                                <td class="px-6 py-4">{{ $napi->email ?? '-' }}</td>
-                                <td class="px-6 py-4 text-center space-x-2">
-                                    <button @click="openEditUser({{ $napi->toJson() }})" class="bg-blue-100 text-blue-700 hover:bg-blue-200 px-4 py-2 rounded-lg text-sm font-bold transition-colors">Edit</button>
-                                    <form action="{{ route('admin.user.destroy', $napi->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Hapus akun Klien ini? Semua data laporan absensinya juga akan ikut terhapus.');">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="bg-red-100 text-red-700 hover:bg-red-200 px-4 py-2 rounded-lg text-sm font-bold transition-colors">Hapus</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr><td colspan="5" class="text-center py-6 text-slate-500">Tidak ada data Klien/Narapidana.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+            <div class="relative z-10 flex w-full max-w-4xl flex-col items-center">
+                <button @click="showImageModal = false" class="mb-5 bg-red-600 hover:bg-red-700 px-6 py-2.5 font-bold text-white rounded-xl shadow-lg transition-colors">Tutup Foto</button>
 
-            <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="bg-indigo-800 text-white px-6 py-4 flex justify-between items-center">
-                    <h3 class="font-bold text-lg">Kontrol Seluruh Penilaian Kinerja PK</h3>
-                </div>
-                <div class="overflow-x-auto custom-scrollbar">
-                    <table class="w-full text-left text-slate-700 min-w-[700px]">
-                        <thead class="bg-slate-50 border-b border-slate-200 text-sm font-bold uppercase tracking-wide">
-                            <tr>
-                                <th class="px-6 py-4">Periode</th>
-                                <th class="px-6 py-4">Nama PK/Pengawas</th>
-                                <th class="px-6 py-4 text-center">Predikat</th>
-                                <th class="px-6 py-4 text-center">Aksi Hapus</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-200">
-                            @forelse($semuaKinerja as $kinerja)
-                            <tr class="hover:bg-slate-50 transition-colors">
-                                <td class="px-6 py-4 font-bold">{{ $kinerja->bulan }}/{{ $kinerja->tahun }}</td>
-                                <td class="px-6 py-4 font-bold text-slate-900">{{ $kinerja->pengawas->nama ?? 'Akun Telah Dihapus' }}</td>
-                                <td class="px-6 py-4 text-center font-bold text-blue-700">{{ $kinerja->predikat }} ({{ $kinerja->rata_rata }}%)</td>
-                                <td class="px-6 py-4 text-center">
-                                    <form action="{{ route('admin.kinerja.destroy', $kinerja->id) }}" method="POST" onsubmit="return confirm('Yakin menghapus data kinerja ini?');">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="bg-red-100 text-red-700 hover:bg-red-200 px-4 py-2 rounded-lg text-sm font-bold transition-colors">Hapus Kinerja</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr><td colspan="4" class="text-center py-6 text-slate-500">Belum ada data Penilaian Kinerja masuk.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+                <div class="relative flex items-center justify-center w-full group">
 
-            <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="bg-teal-800 text-white px-6 py-4 flex justify-between items-center">
-                    <h3 class="font-bold text-lg">Kontrol Seluruh Laporan Absensi Klien</h3>
-                </div>
-                <div class="overflow-x-auto custom-scrollbar">
-                    <table class="w-full text-left text-slate-700 min-w-[900px]">
-                        <thead class="bg-slate-50 border-b border-slate-200 text-sm font-bold uppercase tracking-wide">
-                            <tr>
-                                <th class="px-6 py-4">Tanggal</th>
-                                <th class="px-6 py-4">Nama Klien</th>
-                                <th class="px-6 py-4">Kegiatan</th>
-                                <th class="px-6 py-4">Dibimbing Oleh (PK)</th>
-                                <th class="px-6 py-4 text-center">Bukti & Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-200">
-                            @forelse($semuaAbsensi as $absensi)
-                            <tr class="hover:bg-slate-50 transition-colors">
-                                <td class="px-6 py-4 font-bold">{{ \Carbon\Carbon::parse($absensi->tanggal_waktu)->format('d/m/Y') }}</td>
-                                <td class="px-6 py-4 font-bold text-slate-900">{{ $absensi->narapidana->nama ?? 'Akun Telah Dihapus' }}</td>
-                                <td class="px-6 py-4">{{ $absensi->jenis_kegiatan }}</td>
-                                <td class="px-6 py-4 text-sm">{{ $absensi->pengawas->nama ?? 'Belum Dipilih' }}</td>
-                                <td class="px-6 py-4 text-center space-x-2">
-                                    <button type="button" @click.prevent="showImageModal = true; imgSrc = '{{ asset('storage/' . $absensi->bukti_file) }}'" class="bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-2 rounded-lg text-sm font-bold transition-colors">Lihat</button>
-                                    <form action="{{ route('admin.absensi.destroy', $absensi->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin menghapus laporan absensi ini?');">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="bg-red-100 text-red-700 hover:bg-red-200 px-3 py-2 rounded-lg text-sm font-bold transition-colors">Hapus</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr><td colspan="5" class="text-center py-6 text-slate-500">Belum ada data Laporan Absensi masuk.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+                    <button x-show="images.length > 1 && currentIndex > 0" @click="prevImage()" class="absolute left-0 z-20 bg-black/40 hover:bg-black/70 text-white p-3 sm:p-4 rounded-full backdrop-blur-md transition-all sm:-ml-12 focus:outline-none focus:ring-4 focus:ring-white/30">
+                        <svg class="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+                    </button>
 
-        </div>
+                    <img :src="images[currentIndex]" class="max-h-[75vh] max-w-full rounded-2xl object-contain shadow-2xl transition-all duration-300">
 
-        <div x-cloak x-show="showEditModal" class="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/70 backdrop-blur-sm px-4">
-            <div @click="showEditModal = false" class="absolute inset-0 cursor-pointer"></div>
-            <div class="relative z-10 w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden transform transition-all">
-                <div class="bg-indigo-900 px-6 py-4 flex justify-between items-center">
-                    <h3 class="font-bold text-white text-lg">Edit Data Pengguna</h3>
-                    <button @click="showEditModal = false" class="text-indigo-200 hover:text-white focus:outline-none">
-                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    <button x-show="images.length > 1 && currentIndex < images.length - 1" @click="nextImage()" class="absolute right-0 z-20 bg-black/40 hover:bg-black/70 text-white p-3 sm:p-4 rounded-full backdrop-blur-md transition-all sm:-mr-12 focus:outline-none focus:ring-4 focus:ring-white/30">
+                        <svg class="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
                     </button>
                 </div>
-                <form :action="editFormAction" method="POST" class="p-6 space-y-4">
-                    @csrf
-                    @method('PUT')
 
-                    <div>
-                        <label class="block text-sm font-bold text-slate-800 mb-1">Nama Lengkap</label>
-                        <input type="text" name="nama" x-model="editData.nama" required pattern="[a-zA-Z\s]+" class="w-full rounded-xl border-slate-300 focus:border-indigo-500 focus:ring-indigo-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-slate-800 mb-1">Nomor Induk (NIK/NIP/NRP)</label>
-                        <input type="text" name="nomor_induk" x-model="editData.nomor_induk" required inputmode="numeric" pattern="[0-9]*" maxlength="18" class="w-full rounded-xl border-slate-300 focus:border-indigo-500 focus:ring-indigo-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-slate-800 mb-1">Email Aktif (Opsional)</label>
-                        <input type="email" name="email" x-model="editData.email" class="w-full rounded-xl border-slate-300 focus:border-indigo-500 focus:ring-indigo-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-slate-800 mb-1">Role / Peran</label>
-                        <select name="role" x-model="editData.role" required class="w-full rounded-xl border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 font-medium">
-                            <option value="admin">Administrator</option>
-                            <option value="pengawas">PK / Pengawas Lapas</option>
-                            <option value="narapidana">Klien / Narapidana</option>
-                        </select>
-                    </div>
-                    <div class="pt-2 border-t border-slate-200">
-                        <label class="block text-sm font-bold text-slate-800 mb-1">Reset Password Baru</label>
-                        <input type="password" name="password" placeholder="Kosongkan jika tidak ingin mereset password" class="w-full rounded-xl border-slate-300 focus:border-indigo-500 focus:ring-indigo-500">
-                        <p class="text-[11px] text-slate-500 mt-1">Isi minimal 8 karakter jika klien lupa password.</p>
-                    </div>
-
-                    <div class="pt-4 flex justify-end gap-3">
-                        <button type="button" @click="showEditModal = false" class="px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold hover:bg-slate-200">Batal</button>
-                        <button type="submit" class="px-5 py-2.5 rounded-xl bg-indigo-700 text-white font-bold hover:bg-indigo-800 shadow-md">Simpan Perubahan</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <div x-cloak x-show="showImageModal" class="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/95 px-4 backdrop-blur-md transition-opacity">
-            <div @click="showImageModal = false" class="absolute inset-0 cursor-pointer"></div>
-            <div class="relative z-10 flex w-full max-w-4xl flex-col items-center justify-center">
-                <button @click="showImageModal = false" class="mb-4 bg-red-600 px-5 py-2.5 font-bold text-white rounded-xl hover:bg-red-700">Tutup Foto</button>
-                <img :src="imgSrc" class="max-h-[82vh] max-w-full rounded-2xl object-contain shadow-2xl">
-            </div>
-        </div>
-
-        <div x-cloak x-show="showAlert" class="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/65 px-4 backdrop-blur-sm transition-opacity">
-            <div @click="showAlert = false" class="absolute inset-0 cursor-pointer"></div>
-            <div class="relative z-10 w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-center shadow-2xl transition-all sm:p-8">
-                @if(session('success'))
-                    <div class="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 ring-1 ring-inset ring-emerald-100">
-                        <svg class="h-10 w-10 text-emerald-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
-                    </div>
-                    <h3 class="mb-2 text-2xl font-bold text-slate-900">Berhasil!</h3>
-                    <p class="mb-6 text-base leading-relaxed text-slate-600">{{ session('success') }}</p>
-                @elseif($errors->any())
-                    <div class="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-red-50 ring-1 ring-inset ring-red-100">
-                        <svg class="h-10 w-10 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </div>
-                    <h3 class="mb-3 text-2xl font-bold text-slate-900">Terjadi Kesalahan!</h3>
-                    <div class="mb-6 rounded-xl border border-red-100 bg-red-50 p-4 text-left text-sm leading-relaxed text-red-700">
-                        <ul class="list-inside list-disc space-y-1.5">
-                            @foreach(array_unique($errors->all()) as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-                <button @click="showAlert = false" class="w-full bg-indigo-900 hover:bg-indigo-800 text-white font-bold py-3 px-4 rounded-xl">Tutup Peringatan</button>
+                <div x-show="images.length > 1" class="mt-5 bg-black/60 text-white px-5 py-2 rounded-full text-sm font-bold backdrop-blur-md tracking-wider">
+                    Foto <span x-text="currentIndex + 1"></span> dari <span x-text="images.length"></span>
+                </div>
             </div>
         </div>
 
@@ -295,11 +232,7 @@
 </x-app-layout>
 
 <style>
-    header:has(.bapas-admin-header) {
-        background-color: #f1f5f9 !important;
-        border-bottom: 1px solid #e2e8f0;
-        box-shadow: none !important;
-    }
+    header:has(.font-bold) { background-color: #f1f5f9 !important; border-bottom: 1px solid #e2e8f0; box-shadow: none !important; }
     [x-cloak] { display: none !important; }
     .custom-scrollbar { scrollbar-width: thin; scrollbar-color: #94a3b8 #e2e8f0; }
     .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }

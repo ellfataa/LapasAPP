@@ -8,7 +8,7 @@
 
         <div class="min-w-0">
             <h2 class="text-lg font-bold text-slate-900 sm:text-xl">Informasi Profil</h2>
-            <p class="mt-1 text-sm leading-relaxed text-slate-600">Perbarui data diri dan Nomor Induk (NRP/NIP/NIK) akun Anda.</p>
+            <p class="mt-1 text-sm leading-relaxed text-slate-600">Perbarui data diri dan Nomor Induk (NRP/NIP/NIK/Nomor Registrasi) akun Anda.</p>
         </div>
     </header>
 
@@ -33,7 +33,7 @@
         </div>
 
         <div>
-            <x-input-label for="nomor_induk" value="Nomor Induk (NRP/NIP/NIK)" class="mb-2 block text-sm font-bold text-slate-800" />
+            <x-input-label for="nomor_induk" value="Nomor Induk (NRP/NIP/NIK/Nomor Registrasi)" class="mb-2 block text-sm font-bold text-slate-800" />
 
             <div class="relative">
                 <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
