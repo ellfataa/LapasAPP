@@ -133,13 +133,50 @@
 
                             <x-text-input
                                 id="password"
-                                class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white py-3 pl-12 pr-4 text-base text-slate-900 shadow-sm transition placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700"
+                                class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white py-3 pl-12 pr-12 text-base text-slate-900 shadow-sm transition placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700"
                                 type="password"
                                 name="password"
                                 required
                                 autocomplete="current-password"
                                 placeholder="Masukkan password Anda"
                             />
+
+                            <button
+                                type="button"
+                                id="toggle-password"
+                                class="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-500 transition hover:text-slate-700"
+                                aria-label="Tampilkan password"
+                            >
+                                <svg
+                                    id="toggle-password-icon"
+                                    class="h-5 w-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        id="eye-icon"
+                                        d="M1.5 12C1.5 12 5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    />
+                                    <path
+                                        id="eye-circle"
+                                        d="M12 15.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7z"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    />
+                                    <path
+                                        id="eye-slash"
+                                        class="hidden"
+                                        d="M3 3l18 18M9.885 9.886A3.5 3.5 0 0112 7.5a3.5 3.5 0 013.5 3.5c0 .56-.15 1.08-.41 1.53"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    />
+                                </svg>
+                            </button>
                         </div>
                     </div>
 
@@ -328,6 +365,19 @@
         document.getElementById('identitas').addEventListener('input', function(e) {
             this.value = this.value.replace(/[^0-9]/g, '');
         });
+
+        const passwordInput = document.getElementById('password');
+        const toggleButton = document.getElementById('toggle-password');
+        const eyeSlashPath = document.getElementById('eye-slash');
+
+        if (toggleButton && passwordInput) {
+            toggleButton.addEventListener('click', function () {
+                const isPasswordVisible = passwordInput.type === 'text';
+                passwordInput.type = isPasswordVisible ? 'password' : 'text';
+                eyeSlashPath.classList.toggle('hidden', !isPasswordVisible);
+                toggleButton.setAttribute('aria-label', isPasswordVisible ? 'Tampilkan password' : 'Sembunyikan password');
+            });
+        }
     </script>
 
     <style>

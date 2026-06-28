@@ -134,11 +134,24 @@
 
                             <x-text-input
                                 id="password"
-                                class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white py-3 pl-12 pr-4 text-base text-slate-900 shadow-sm transition hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700"
+                                class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white py-3 pl-12 pr-12 text-base text-slate-900 shadow-sm transition placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700"
                                 type="password"
                                 name="password"
                                 required
                             />
+
+                            <button
+                                type="button"
+                                id="toggle-password"
+                                class="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-500 transition hover:text-slate-700"
+                                aria-label="Tampilkan password"
+                            >
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M1.5 12C1.5 12 5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z" stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M12 15.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7z" stroke-linecap="round" stroke-linejoin="round" />
+                                    <path id="eye-slash-password" class="hidden" d="M3 3l18 18" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </button>
                         </div>
                     </div>
 
@@ -158,19 +171,32 @@
 
                             <x-text-input
                                 id="password_confirmation"
-                                class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white py-3 pl-12 pr-4 text-base text-slate-900 shadow-sm transition hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700"
+                                class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white py-3 pl-12 pr-12 text-base text-slate-900 shadow-sm transition placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700"
                                 type="password"
                                 name="password_confirmation"
                                 required
                             />
+
+                            <button
+                                type="button"
+                                id="toggle-password-confirmation"
+                                class="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-500 transition hover:text-slate-700"
+                                aria-label="Tampilkan konfirmasi password"
+                            >
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M1.5 12C1.5 12 5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z" stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M12 15.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7z" stroke-linecap="round" stroke-linejoin="round" />
+                                    <path id="eye-slash-password-confirmation" class="hidden" d="M3 3l18 18" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </button>
                         </div>
                     </div>
 
                     <div class="pt-2">
                         <button
                             type="submit"
-                            class="inline-flex min-h-[50px] w-full items-center justify-center gap-2 rounded-xl bg-blue-900 px-4 py-3.5 font-bold text-white shadow-sm transition hover:bg-blue-800 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-blue-200"
-                        >
+                            class="inline-flex min-h-[50px] w-full items-center justify-center gap-2 rounded-xl bg-blue-900 px-4 py-3.5 font-bold text-white shadow-sm transition hover:bg-blue-800 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-blue-200">
+
                             <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                             </svg>
@@ -281,6 +307,29 @@
         document.getElementById('nomor_induk').addEventListener('input', function(e) {
             this.value = this.value.replace(/[^0-9]/g, '');
         });
+
+        const passwordInput = document.getElementById('password');
+        const passwordConfirmInput = document.getElementById('password_confirmation');
+        const passwordToggle = document.getElementById('toggle-password');
+        const passwordConfirmToggle = document.getElementById('toggle-password-confirmation');
+
+        if (passwordToggle && passwordInput) {
+            passwordToggle.addEventListener('click', function () {
+                const isVisible = passwordInput.type === 'text';
+                passwordInput.type = isVisible ? 'password' : 'text';
+                document.getElementById('eye-slash-password').classList.toggle('hidden', isVisible);
+                passwordToggle.setAttribute('aria-label', isVisible ? 'Tampilkan password' : 'Sembunyikan password');
+            });
+        }
+
+        if (passwordConfirmToggle && passwordConfirmInput) {
+            passwordConfirmToggle.addEventListener('click', function () {
+                const isVisible = passwordConfirmInput.type === 'text';
+                passwordConfirmInput.type = isVisible ? 'password' : 'text';
+                document.getElementById('eye-slash-password-confirmation').classList.toggle('hidden', isVisible);
+                passwordConfirmToggle.setAttribute('aria-label', isVisible ? 'Tampilkan konfirmasi password' : 'Sembunyikan konfirmasi password');
+            });
+        }
     </script>
 
     <style>
