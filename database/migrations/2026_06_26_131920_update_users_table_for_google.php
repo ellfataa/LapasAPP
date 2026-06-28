@@ -12,8 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('email')->nullable()->change(); // Email boleh kosong untuk daftar manual
-            $table->string('google_id')->nullable()->after('email'); // Menyimpan ID Google
+            // Cek dulu apakah kolom belum ada, baru tambahkan
+            if (!Schema::hasColumn('users', 'google_id')) {
+                $table->string('google_id')->nullable()->after('email');
+            }
         });
     }
 
