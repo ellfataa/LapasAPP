@@ -12,16 +12,24 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->engine = 'InnoDB'; // Wajib ditambahkan
-            $table->id(); // Ini adalah bigint unsigned (Auto Increment)
+            $table->engine = 'InnoDB';
+            $table->id();
             $table->string('nama');
             $table->string('nomor_induk')->unique(); // NIK/NIP/NRP
             $table->string('email')->nullable()->unique();
             $table->string('role'); // admin, pengawas, narapidana
+
+            // TAMBAHAN: Kolom untuk menyimpan ID PK Pembimbing
+            $table->unsignedBigInteger('pembimbing_id')->nullable();
+
             $table->string('password');
             $table->string('google_id')->nullable();
             $table->rememberToken();
             $table->timestamps();
+
+            // TAMBAHAN: Relasi Foreign Key
+            // Jika PK (Pengawas) dihapus, maka klien tidak ikut terhapus, melainkan status pembimbingnya menjadi kosong (null)
+            $table->foreign('pembimbing_id')->references('id')->on('users')->nullOnDelete();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

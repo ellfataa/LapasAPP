@@ -45,7 +45,9 @@ class AdminController extends Controller
         ));
     }
 
+    // ==========================================
     // MANAJEMEN PK/PENGAWAS
+    // ==========================================
     public function pengawasIndex(Request $request)
     {
         $query = User::where('role', 'pengawas');
@@ -60,12 +62,76 @@ class AdminController extends Controller
     }
 
     public function pengawasCreate() { return view('admin.pengawas.create'); }
+
     public function pengawasEdit($id) {
         $pk = User::where('role', 'pengawas')->findOrFail($id);
         return view('admin.pengawas.edit', compact('pk'));
     }
 
+    public function storePengawas(Request $request) {
+        $request->validate([
+            'nama' => ['required', 'string', 'max:255', 'regex:/^[\pL\s.,\'’()\/&-]+$/u'],
+            'nomor_induk' => ['required', 'string', 'max:50', 'regex:/^[\pL\pN\s.,\'’()\/&-]+$/u', 'unique:users,nomor_induk'],
+            'password' => ['required', 'min:8']
+        ]);
+
+        User::create([
+            'nama' => trim($request->nama),
+            'nomor_induk' => $request->nomor_induk,
+            'role' => 'pengawas',
+            'password' => Hash::make($request->password)
+        ]);
+
+        return redirect()->route('admin.pengawas.index')->with('success', "Akun PK atas nama {$request->nama} berhasil ditambahkan.");
+    }
+
+    public function importPengawas(Request $request) {
+        $request->validate(['file_excel' => ['required', 'file', 'mimes:csv,xlsx,xls,txt', 'max:8192']]);
+        try {
+            $file = $request->file('file_excel');
+            $spreadsheet = IOFactory::load($file->getRealPath());
+            $worksheet = $spreadsheet->getActiveSheet();
+            $rows = $worksheet->toArray();
+
+            $berhasilTambah = 0; $berhasilUpdate = 0;
+
+            for ($i = 1; $i < count($rows); $i++) {
+                $nama = trim($rows[$i][0] ?? '');
+                $nipExcel = trim($rows[$i][1] ?? '');
+
+                if (!empty($nama)) {
+                    $existingUser = User::where('role', 'pengawas')->whereRaw('LOWER(nama) = ?', strtolower($nama))->first();
+
+                    if ($existingUser) {
+                        if (!empty($nipExcel) && $existingUser->nomor_induk !== $nipExcel) {
+                            if (!User::where('nomor_induk', $nipExcel)->where('id', '!=', $existingUser->id)->exists()) {
+                                $existingUser->update(['nomor_induk' => $nipExcel]);
+                                $berhasilUpdate++;
+                            }
+                        }
+                    } else {
+                        $finalNip = !empty($nipExcel) ? $nipExcel : ('19' . date('ymd') . rand(1000, 9999));
+                        if (!User::where('nomor_induk', $finalNip)->exists()) {
+                            User::create(['nama' => $nama, 'nomor_induk' => $finalNip, 'role' => 'pengawas', 'password' => Hash::make('bapas123')]);
+                            $berhasilTambah++;
+                        }
+                    }
+                }
+            }
+
+            $pesan = "Import Selesai! Sebanyak {$berhasilTambah} akun PK ditambahkan";
+            if ($berhasilUpdate > 0) $pesan .= " dan {$berhasilUpdate} diperbarui NIP-nya";
+            return redirect()->back()->with('success', $pesan . ".");
+
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['file_excel' => 'Gagal membaca file Excel. Pastikan Kolom A (Nama) dan B (NIP).']);
+        }
+    }
+
+
+    // ==========================================
     // MANAJEMEN KLIEN/NARAPIDANA
+    // ==========================================
     public function narapidanaIndex(Request $request)
     {
         $query = User::where('role', 'narapidana');
@@ -91,62 +157,106 @@ class AdminController extends Controller
     public function storeNarapidana(Request $request)
     {
         $request->validate([
-            'nama' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z\s]+$/'],
-            'nomor_induk' => ['required', 'string', 'max:18', 'regex:/^[0-9]+$/', 'unique:users,nomor_induk'],
-            'email' => ['nullable', 'email', 'max:255', 'unique:users,email'],
+            'nama' => ['required', 'string', 'max:255', 'regex:/^[\pL\s.,\'’()\/&-]+$/u'],
+            'nomor_induk' => ['required', 'string', 'max:50', 'regex:/^[\pL\pN\s.,\'’()\/&-]+$/u', 'unique:users,nomor_induk'],
             'password' => ['required', 'min:8'],
         ], [
-            'nama.regex' => 'Nama Lengkap hanya boleh berisi huruf dan spasi.',
-            'nomor_induk.regex' => 'Nomor Induk (NIK) hanya boleh berisi angka.',
-            'nomor_induk.max' => 'Nomor Induk (NIK) maksimal 18 digit.',
-            'nomor_induk.unique' => 'Nomor Induk (NIK) ini sudah terdaftar di sistem.',
+            'nama.regex' => 'Nama Lengkap hanya boleh berisi huruf, spasi, dan tanda baca umum.',
+            'nomor_induk.regex' => 'Nomor Induk hanya boleh berisi huruf, angka, spasi, dan tanda baca umum.',
+            'nomor_induk.max' => 'Nomor Induk maksimal 50 karakter.',
+            'nomor_induk.unique' => 'Nomor Induk ini sudah terdaftar di sistem.',
             'password.min' => 'Password minimal harus 8 karakter.'
         ]);
 
         User::create([
             'nama' => trim($request->nama),
             'nomor_induk' => $request->nomor_induk,
-            'email' => $request->email,
             'role' => 'narapidana',
             'password' => Hash::make($request->password),
         ]);
 
-        return redirect()->route('admin.narapidana.index')->with('success', "Akun Klien / Narapidana atas nama {$request->nama} berhasil ditambahkan secara manual.");
+        return redirect()->route('admin.narapidana.index')->with('success', "Akun Klien/Narapidana atas nama {$request->nama} berhasil ditambahkan secara manual.");
     }
 
-
-    // FUNGSI UMUM (CREATE PK, UPDATE SEMUA, DELETE SEMUA)
-    public function storePengawas(Request $request) {
-        $request->validate(['nama' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z\s]+$/'], 'nomor_induk' => ['required', 'string', 'max:18', 'regex:/^[0-9]+$/', 'unique:users,nomor_induk'], 'email' => ['nullable', 'email', 'max:255', 'unique:users,email'], 'password' => ['required', 'min:8']]);
-        User::create(['nama' => trim($request->nama), 'nomor_induk' => $request->nomor_induk, 'email' => $request->email, 'role' => 'pengawas', 'password' => Hash::make($request->password)]);
-        return redirect()->route('admin.pengawas.index')->with('success', "Akun PK atas nama {$request->nama} berhasil ditambahkan.");
-    }
-
-    public function importPengawas(Request $request) {
+    // TAMBAHAN: FUNGSI IMPORT KLIEN/NARAPIDANA
+    public function importNarapidana(Request $request) {
         $request->validate(['file_excel' => ['required', 'file', 'mimes:csv,xlsx,xls,txt', 'max:8192']]);
         try {
-            $file = $request->file('file_excel'); $spreadsheet = IOFactory::load($file->getRealPath()); $worksheet = $spreadsheet->getActiveSheet(); $rows = $worksheet->toArray();
-            $berhasil = 0;
+            $file = $request->file('file_excel');
+            $spreadsheet = IOFactory::load($file->getRealPath());
+            $worksheet = $spreadsheet->getActiveSheet();
+            $rows = $worksheet->toArray();
+
+            $berhasilTambah = 0; $berhasilUpdate = 0;
+
+            // Array Romawi untuk konversi bulan
+            $romawi = [1=>'I',2=>'II',3=>'III',4=>'IV',5=>'V',6=>'VI',7=>'VII',8=>'VIII',9=>'IX',10=>'X',11=>'XI',12=>'XII'];
+            $bulanRomawi = $romawi[date('n')];
+            $tahun = date('Y');
+
             for ($i = 1; $i < count($rows); $i++) {
-                $nama = $rows[$i][0] ?? null;
-                if (!empty($nama) && trim($nama) != '') {
-                    User::create(['nama' => trim($nama), 'nomor_induk' => '19' . date('ymd') . rand(1000, 9999), 'role' => 'pengawas', 'password' => Hash::make('bapas123')]);
-                    $berhasil++;
+                $nama = trim($rows[$i][0] ?? ''); // Kolom A: Nama Klien
+                $nikExcel = trim($rows[$i][1] ?? ''); // Kolom B: No Registrasi
+
+                if (!empty($nama)) {
+                    $existingUser = User::where('role', 'narapidana')->whereRaw('LOWER(nama) = ?', strtolower($nama))->first();
+
+                    if ($existingUser) {
+                        // Jika nama sudah ada, update Nomor Registrasinya saja
+                        if (!empty($nikExcel) && $existingUser->nomor_induk !== $nikExcel) {
+                            if (!User::where('nomor_induk', $nikExcel)->where('id', '!=', $existingUser->id)->exists()) {
+                                $existingUser->update(['nomor_induk' => $nikExcel]);
+                                $berhasilUpdate++;
+                            }
+                        }
+                    } else {
+                        // Jika belum ada, buat Klien baru
+                        // Generate No Reg: "123/PB/VI/2026"
+                        $nomorAcak = rand(100, 999);
+                        $finalNik = !empty($nikExcel) ? $nikExcel : ("{$nomorAcak}/PB/{$bulanRomawi}/{$tahun}");
+
+                        if (!User::where('nomor_induk', $finalNik)->exists()) {
+                            User::create([
+                                'nama' => $nama,
+                                'nomor_induk' => $finalNik,
+                                'role' => 'narapidana',
+                                'password' => Hash::make('bapas123')
+                            ]);
+                            $berhasilTambah++;
+                        }
+                    }
                 }
             }
-            return redirect()->back()->with('success', "Import Berhasil! Sebanyak {$berhasil} akun PK ditambahkan otomatis.");
-        } catch (\Exception $e) { return redirect()->back()->withErrors(['file_excel' => 'Gagal membaca file berkas Excel.']); }
+
+            $pesan = "Import Selesai! Sebanyak {$berhasilTambah} akun Klien ditambahkan";
+            if ($berhasilUpdate > 0) $pesan .= " dan {$berhasilUpdate} diperbarui NIK/No.Registrasinya";
+            return redirect()->back()->with('success', $pesan . ".");
+
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['file_excel' => 'Gagal membaca file Excel. Pastikan Kolom A berisi Nama dan Kolom B berisi NIK/No.Registrasi.']);
+        }
     }
 
+
+    // ==========================================
+    // FUNGSI UMUM UPDATE & DELETE (Berlaku untuk PK & Klien)
+    // ==========================================
     public function updateUser(Request $request, $id)
     {
         $user = User::findOrFail($id);
-        $request->validate(['nama' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z\s]+$/'], 'nomor_induk' => ['required', 'string', 'max:18', 'regex:/^[0-9]+$/', 'unique:users,nomor_induk,' . $id], 'email' => ['nullable', 'email', 'max:255', 'unique:users,email,' . $id], 'password' => ['nullable', 'min:8']]);
-        $user->nama = trim($request->nama); $user->nomor_induk = $request->nomor_induk; $user->email = $request->email;
+        $request->validate([
+            'nama' => ['required', 'string', 'max:255', 'regex:/^[\pL\s.,\'’()\/&-]+$/u'],
+            'nomor_induk' => ['required', 'string', 'max:50', 'regex:/^[\pL\pN\s.,\'’()\/&-]+$/u', 'unique:users,nomor_induk,' . $id],
+            'password' => ['nullable', 'min:8']
+        ]);
+
+        $user->nama = trim($request->nama);
+        $user->nomor_induk = $request->nomor_induk;
+
         if ($request->filled('password')) { $user->password = Hash::make($request->password); }
         $user->save();
 
-        // Kembalikan ke halaman index masing-masing sesuai role user yang diubah
+        // Kembalikan ke halaman index masing-masing
         $route = $user->role === 'pengawas' ? 'admin.pengawas.index' : 'admin.narapidana.index';
         return redirect()->route($route)->with('success', "Data akun atas nama {$user->nama} berhasil diperbarui.");
     }
@@ -156,7 +266,7 @@ class AdminController extends Controller
         $user = User::findOrFail($id);
         $namaUser = $user->nama;
 
-        // Pembersihan Otomatis Jika User = Pengawas(Hapus File Kinerja)
+        // Pembersihan PK
         if ($user->role === 'pengawas') {
             $kinerjas = KinerjaPk::where('pengawas_id', $id)->get();
             foreach ($kinerjas as $kinerja) {
@@ -173,7 +283,7 @@ class AdminController extends Controller
             }
         }
 
-        // Pembersihan Otomatis Jika User = Narapidana(Hapus Foto Absensi)
+        // Pembersihan Klien
         if ($user->role === 'narapidana') {
             $absensis = AbsensiKegiatan::where('narapidana_id', $id)->get();
             foreach ($absensis as $absensi) {
@@ -188,22 +298,64 @@ class AdminController extends Controller
         return redirect()->back()->with('success', "Akun atas nama {$namaUser} beserta seluruh berkas miliknya berhasil dihapus bersih.");
     }
 
-    // MENU PENILAIAN KINERJA PK/PENGAWAS
+    // ==========================================
+    // MENU BARU: REKAP DATA & PEMETAAN
+    // ==========================================
+    public function rekapIndex(Request $request)
+    {
+        // 1. Ambil daftar PK beserta jumlah klien yang sudah di-assign ke mereka
+        $queryPk = User::where('role', 'pengawas')->withCount('klienBimbingan');
+
+        if ($request->filled('search_pk')) {
+            $queryPk->where('nama', 'like', "%{$request->search_pk}%");
+        }
+        $daftarPk = $queryPk->orderBy('nama', 'asc')->paginate(15, ['*'], 'pk_page');
+
+        // 2. Ambil seluruh data PK dan Klien untuk keperluan Dropdown Hubungkan
+        $semuaPk = User::where('role', 'pengawas')->orderBy('nama', 'asc')->get();
+
+        // Ambil daftar klien (bisa difilter untuk yang belum punya PK, tapi kita ambil semua saja agar bisa dipindah-pindah)
+        $semuaKlien = User::where('role', 'narapidana')->orderBy('nama', 'asc')->get();
+
+        return view('admin.rekap.index', compact('daftarPk', 'semuaPk', 'semuaKlien'));
+    }
+
+    public function hubungkanPkKlien(Request $request)
+    {
+        $request->validate([
+            'pk_id' => 'required|exists:users,id',
+            'klien_ids' => 'required|array', // Harus array karena bisa pilih banyak klien sekaligus
+            'klien_ids.*' => 'exists:users,id'
+        ]);
+
+        $pk = User::where('role', 'pengawas')->findOrFail($request->pk_id);
+
+        // Update pembimbing_id pada klien-klien yang dipilih
+        User::whereIn('id', $request->klien_ids)->update(['pembimbing_id' => $pk->id]);
+
+        return redirect()->back()->with('success', count($request->klien_ids) . " Klien berhasil dihubungkan di bawah pengawasan PK: {$pk->nama}.");
+    }
+
+    public function lepasKlien($klien_id)
+    {
+        $klien = User::where('role', 'narapidana')->findOrFail($klien_id);
+        $klien->update(['pembimbing_id' => null]);
+
+        return redirect()->back()->with('success', "Klien {$klien->nama} berhasil dilepas dari pengawasan PK-nya.");
+    }
+
+    // ==========================================
+    // MENU PENILAIAN KINERJA & ABSENSI
+    // ==========================================
     public function kinerjaIndex(Request $request)
     {
-        // Ambil data kinerja beserta relasi user pengawas
-        $query = KinerjaPk::with('pengawas')
-            ->orderBy('tahun', 'desc')
-            ->orderBy('bulan', 'desc');
-
-        // Fitur Pencarian berdasarkan nama pengawas
+        $query = KinerjaPk::with('pengawas')->orderBy('tahun', 'desc')->orderBy('bulan', 'desc');
         if ($request->filled('search')) {
             $search = $request->search;
             $query->whereHas('pengawas', function($q) use ($search) {
                 $q->where('nama', 'like', "%{$search}%");
             });
         }
-
         $semuaKinerja = $query->paginate(15);
         return view('admin.kinerja.index', compact('semuaKinerja'));
     }
@@ -211,29 +363,22 @@ class AdminController extends Controller
     public function destroyKinerja($id)
     {
         $kinerja = KinerjaPk::findOrFail($id);
-
         foreach (['litmas', 'pendampingan', 'pembimbingan', 'pengawasan'] as $kat) {
             $files = json_decode($kinerja->{$kat . '_file'}, true);
             if (is_array($files)) {
                 foreach ($files as $file) {
                     $path = is_array($file) ? ($file['path'] ?? '') : $file;
-                    if ($path && Storage::disk('public')->exists($path)) {
-                        Storage::disk('public')->delete($path);
-                    }
+                    if ($path && Storage::disk('public')->exists($path)) { Storage::disk('public')->delete($path); }
                 }
             }
         }
-
         $kinerja->delete();
         return redirect()->back()->with('success', 'Data penilaian kinerja PK berhasil dihapus beserta lampiran terkait.');
     }
 
-    // MENU ABSENSI/LAPORAN WAJIB KLIEN
     public function absensiIndex(Request $request)
     {
-        $query = AbsensiKegiatan::with(['narapidana', 'pengawas'])
-            ->orderBy('tanggal_waktu', 'desc');
-
+        $query = AbsensiKegiatan::with(['narapidana', 'pengawas'])->orderBy('tanggal_waktu', 'desc');
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -242,7 +387,6 @@ class AdminController extends Controller
                 })->orWhere('jenis_kegiatan', 'like', "%{$search}%");
             });
         }
-
         $semuaAbsensi = $query->paginate(15);
         return view('admin.absensi.index', compact('semuaAbsensi'));
     }
@@ -250,11 +394,9 @@ class AdminController extends Controller
     public function destroyAbsensi($id)
     {
         $absensi = AbsensiKegiatan::findOrFail($id);
-
         if ($absensi->bukti_file && Storage::disk('public')->exists($absensi->bukti_file)) {
             Storage::disk('public')->delete($absensi->bukti_file);
         }
-
         $absensi->delete();
         return redirect()->back()->with('success', 'Data laporan absensi klien berhasil dihapus beserta bukti foto.');
     }

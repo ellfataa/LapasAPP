@@ -28,4 +28,20 @@ class RegistrationTest extends TestCase
         $this->assertAuthenticated();
         $response->assertRedirect(route('dashboard', absolute: false));
     }
+
+    public function test_users_can_register_with_punctuation_in_name(): void
+    {
+        $response = $this->post('/register', [
+            'nama' => 'HARYOTO, Bc.IP., S.Sos',
+            'nomor_induk' => '1234567890123456',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ]);
+
+        $response->assertRedirect(route('login', absolute: false));
+        $this->assertDatabaseHas('users', [
+            'nama' => 'HARYOTO, Bc.IP., S.Sos',
+            'nomor_induk' => '1234567890123456',
+        ]);
+    }
 }

@@ -22,7 +22,7 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $role = $request->user()->role;
-        $pesanSukses = 'Login berhasil! Selamat datang kembali, ' . $request->user()->nama . '.';
+        $pesanSukses = 'Selamat datang kembali, ' . $request->user()->nama . '!';
 
         if ($role === 'admin') {
             return redirect()->intended(route('dashboard.admin', absolute: false))->with('success', $pesanSukses);
@@ -35,12 +35,19 @@ class AuthenticatedSessionController extends Controller
 
     public function destroy(Request $request): RedirectResponse
     {
-        Auth::guard('web')->logout();
+        try {
+            Auth::guard('web')->logout();
 
-        $request->session()->invalidate();
+            $request->session()->invalidate();
 
-        $request->session()->regenerateToken();
+            $request->session()->regenerateToken();
 
-        return redirect('/');
+            // Jika berhasil, arahkan langsung ke rute login dan kirim pesan sukses
+            return redirect()->route('login')->with('success', 'Anda telah berhasil logout dari sistem.');
+
+        } catch (\Exception $e) {
+            // Jika terjadi kegagalan sistem saat logout, kembalikan ke halaman sebelumnya dengan pesan error
+            return redirect()->back()->withErrors(['logout_error' => 'Terjadi kesalahan sistem saat mencoba keluar. Silakan coba lagi.']);
+        }
     }
 }

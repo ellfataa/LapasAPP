@@ -30,16 +30,19 @@
 
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-2">Nama Lengkap</label>
-                        <input type="text" name="nama" value="{{ old('nama', $pk->nama) }}" required pattern="[a-zA-Z\s]+" title="Nama hanya boleh berisi huruf dan spasi" class="block min-h-[48px] w-full rounded-xl border-slate-300 px-4 text-sm text-slate-900 shadow-sm transition focus:border-indigo-500 focus:ring-indigo-500">
+                        <input type="text" name="nama" value="{{ old('nama', $pk->nama) }}" required pattern="[A-Za-zÀ-ÖØ-öø-ÿ\s.,'’()\/&-]+" title="Nama hanya boleh berisi huruf, spasi, dan tanda baca umum" class="block min-h-[48px] w-full rounded-xl border-slate-300 px-4 text-sm text-slate-900 shadow-sm transition focus:border-indigo-500 focus:ring-indigo-500">
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-2">Nomor Induk (NRP/NIP)</label>
-                        <input type="text" name="nomor_induk" value="{{ old('nomor_induk', $pk->nomor_induk) }}" required inputmode="numeric" pattern="[0-9]+" maxlength="18" class="block min-h-[48px] w-full rounded-xl border-slate-300 px-4 text-sm text-slate-900 shadow-sm transition focus:border-indigo-500 focus:ring-indigo-500">
+                        <input type="text" name="nomor_induk" value="{{ old('nomor_induk', $pk->nomor_induk ?? '') }}" required maxlength="50" placeholder="Masukkan Nomor Induk (Huruf/Angka)" class="block min-h-[48px] w-full rounded-xl border-slate-300 px-4 text-sm text-slate-900 shadow-sm transition focus:border-indigo-500 focus:ring-indigo-500">
                     </div>
+
+                    {{-- DIKIRIMKAN KOMENTAR:
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-2">Alamat Email <span class="text-slate-400 font-medium">(Opsional)</span></label>
                         <input type="email" name="email" value="{{ old('email', $pk->email) }}" placeholder="Belum mengisi email" class="block min-h-[48px] w-full rounded-xl border-slate-300 px-4 text-sm text-slate-900 shadow-sm transition focus:border-indigo-500 focus:ring-indigo-500">
                     </div>
+                    --}}
 
                     <input type="hidden" name="role" value="pengawas">
 
@@ -65,7 +68,7 @@
             <div class="relative z-10 w-full max-w-md rounded-2xl bg-white p-6 sm:p-8 text-center shadow-2xl">
                 @if(session('success'))
                     <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-700"><svg class="h-8 w-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg></div>
-                    <h3 class="font-bold text-xl mb-2 text-slate-900">Operasi Berhasil!</h3>
+                    <h3 class="font-bold text-xl mb-2 text-slate-900">Berhasil!</h3>
                     <p class="text-sm text-slate-600 mb-5 leading-relaxed">{{ session('success') }}</p>
                 @elseif($errors->any())
                     <div class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 text-red-600">

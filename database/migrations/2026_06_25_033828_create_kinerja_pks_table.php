@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('pengawas_id');
 
             $table->unsignedTinyInteger('bulan'); // Gunakan tinyInt karena bulan hanya 1-12
-            $table->year('tahun');                 // Gunakan tipe data year agar lebih spesifik
+            $table->year('tahun');                // Gunakan tipe data year agar lebih spesifik
 
             // Kategori Litmas
             $table->integer('litmas_kuota')->default(0);
@@ -26,15 +26,14 @@ return new class extends Migration
             $table->json('litmas_file')->nullable(); // Disarankan JSON jika menyimpan banyak file
             $table->text('litmas_link')->nullable(); // Gunakan text untuk link agar lebih fleksibel
 
-            // Kategori Pendampingan
-            $table->integer('pendampingan_kuota')->default(0);
-            $table->integer('pendampingan_berhasil')->default(0);
-            $table->json('pendampingan_file')->nullable();
-            $table->text('pendampingan_link')->nullable();
+            // ==========================================
+            // Kategori Pendampingan DIHAPUS
+            // ==========================================
 
             // Kategori Pembimbingan
             $table->integer('pembimbingan_kuota')->default(0);
             $table->integer('pembimbingan_berhasil')->default(0);
+            $table->json('pembimbingan_detail')->nullable(); // Menyimpan JSON status kerja klien
             $table->json('pembimbingan_file')->nullable();
             $table->text('pembimbingan_link')->nullable();
 
@@ -63,4 +62,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('kinerja_pks');
     }
-};
+}; 

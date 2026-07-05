@@ -13,7 +13,7 @@ class KinerjaPkController extends Controller
     {
         $userId = Auth::id();
 
-        // 1. Cek Data Existing (Apakah bulan & tahun ini sudah pernah diisi?)
+        // 1. Cek Data Existing
         $existingData = KinerjaPk::where('pengawas_id', $userId)
             ->where('bulan', $request->bulan)
             ->where('tahun', $request->tahun)
@@ -23,65 +23,87 @@ class KinerjaPkController extends Controller
         $rules = [
             'bulan' => ['required', 'integer', 'min:1', 'max:12'],
             'tahun' => ['required', 'integer'],
-            'litmas_berhasil' => ['required', 'numeric', 'min:0'],
-            'pendampingan_kuota' => ['required', 'numeric', 'min:0'],
-            'pendampingan_berhasil' => ['required', 'numeric', 'min:0'],
-            'pembimbingan_kuota' => ['required', 'numeric', 'min:0'],
-            'pembimbingan_berhasil' => ['required', 'numeric', 'min:0'],
+            'pembimbingan_klien' => ['nullable', 'array'],
             'pengawasan_kuota' => ['required', 'numeric', 'min:0'],
             'pengawasan_berhasil' => ['required', 'numeric', 'min:0'],
         ];
 
-        $kategoriList = ['litmas', 'pendampingan', 'pembimbingan', 'pengawasan'];
+        // PERUBAHAN: Hanya Pengawasan yang membutuhkan File & Link
+        $kategoriList = ['pengawasan'];
 
         foreach ($kategoriList as $kategori) {
-            // Jika belum ada data lama, FILE WAJIB DIUNGGAH
             if (!$existingData || empty(json_decode($existingData->{"{$kategori}_file"}, true))) {
                 $rules["{$kategori}_file"] = ['required', 'array'];
             } else {
                 $rules["{$kategori}_file"] = ['nullable', 'array'];
             }
-            // Validasi format dan ukuran file
             $rules["{$kategori}_file.*"] = ['file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'];
-
-            // Validasi untuk Link G-Drive (Opsional tapi harus berupa URL yang valid jika diisi)
             $rules["{$kategori}_link"] = ['nullable', 'url', 'max:255'];
         }
 
-        // 3. Eksekusi Validasi Ketat
         $request->validate($rules, [
-            'required' => 'Kolom Kuota, Berhasil, dan File Bukti wajib diisi (File wajib diunggah untuk form baru).',
+            'required' => 'Kolom Kuota/Status, Berhasil, dan File Bukti wajib diisi.',
             'numeric' => 'Kolom harus berupa angka.',
-            'min' => 'Nilai tidak boleh kurang dari 0.',
             'mimes' => 'Format file bukti harus berupa JPG, JPEG, PNG, atau PDF.',
-            'max' => 'Ukuran file maksimal adalah 10MB per file.',
-            'url' => 'Format link G-Drive/Spreadsheet tidak valid (harus diawali http:// atau https://).'
         ]);
 
         $dataToSave = [];
         $totalPersen = 0;
 
+        // --- 1. KALKULASI LITMAS ---
+        $litmasKuota = $request->input('litmas_kuota', 0);
+        $litmasBerhasil = $request->input('litmas_berhasil', 0);
+        $dataToSave['litmas_kuota'] = $litmasKuota;
+        $dataToSave['litmas_berhasil'] = $litmasBerhasil;
+        $dataToSave['litmas_file'] = null;
+        $dataToSave['litmas_link'] = null;
+
+        $litmasPersen = ($litmasKuota > 0) ? ($litmasBerhasil / $litmasKuota) * 100 : 0;
+        $totalPersen += $litmasPersen;
+
+        // --- 2. KALKULASI PEMBIMBINGAN ---
+        $klienData = $request->input('pembimbingan_klien', []);
+        $totalKlien = count($klienData);
+        $jumlahBekerja = 0;
+        $detailKlien = [];
+
+        foreach ($klienData as $idKlien => $status) {
+            if ($status === 'bekerja') {
+                $jumlahBekerja++;
+            }
+            $detailKlien[] = [
+                'klien_id' => $idKlien,
+                'status' => $status
+            ];
+        }
+
+        $dataToSave['pembimbingan_kuota'] = $totalKlien;
+        $dataToSave['pembimbingan_berhasil'] = $jumlahBekerja;
+        $dataToSave['pembimbingan_detail'] = json_encode($detailKlien);
+
+        // PERUBAHAN: Set null untuk file dan link pembimbingan karena sudah dihapus dari form
+        $dataToSave['pembimbingan_file'] = null;
+        $dataToSave['pembimbingan_link'] = null;
+
+        $pembimbinganPersen = ($totalKlien > 0) ? ($jumlahBekerja / $totalKlien) * 100 : 0;
+        $totalPersen += $pembimbinganPersen;
+
+        // --- 3. KALKULASI PENGAWASAN ---
+        $pengawasKuota = $request->input('pengawasan_kuota', 0);
+        $pengawasBerhasil = $request->input('pengawasan_berhasil', 0);
+        $dataToSave['pengawasan_kuota'] = $pengawasKuota;
+        $dataToSave['pengawasan_berhasil'] = $pengawasBerhasil;
+        $dataToSave['pengawasan_link'] = $request->input('pengawasan_link');
+
+        $pengawasanPersen = ($pengawasKuota > 0) ? ($pengawasBerhasil / $pengawasKuota) * 100 : 0;
+        $totalPersen += $pengawasanPersen;
+
+        // --- PROSES UPLOAD FILE BUKTI (Hanya untuk Pengawasan) ---
         foreach ($kategoriList as $kategori) {
-            // Kunci kuota Litmas wajib 12
-            $kuota = ($kategori === 'litmas') ? 12 : $request->input("{$kategori}_kuota", 0);
-            $berhasil = $request->input("{$kategori}_berhasil", 0);
-
-            $dataToSave["{$kategori}_kuota"] = $kuota;
-            $dataToSave["{$kategori}_berhasil"] = $berhasil;
-
-            // Simpan link G-Drive
-            $dataToSave["{$kategori}_link"] = $request->input("{$kategori}_link");
-
-            // Kalkulasi
-            $persen = ($kuota > 0) ? ($berhasil / $kuota) * 100 : 0;
-            $totalPersen += $persen;
-
-            // Proses Upload File
             if ($request->hasFile("{$kategori}_file")) {
                 $files = $request->file("{$kategori}_file");
                 $fileData = [];
 
-                // Hapus file lama untuk mencegah penumpukan data sampah di server
                 if ($existingData && $existingData->{"{$kategori}_file"}) {
                     $oldFiles = json_decode($existingData->{"{$kategori}_file"}, true);
                     if (is_array($oldFiles)) {
@@ -105,8 +127,8 @@ class KinerjaPkController extends Controller
             }
         }
 
-        // Hitung Rata-Rata Akhir & Predikat
-        $dataToSave['rata_rata'] = round($totalPersen / 4, 1);
+        // --- HITUNG RATA-RATA AKHIR ---
+        $dataToSave['rata_rata'] = round($totalPersen / 3, 1);
 
         if ($dataToSave['rata_rata'] >= 91) {
             $dataToSave['predikat'] = 'Sangat Baik';
@@ -120,7 +142,6 @@ class KinerjaPkController extends Controller
             $dataToSave['predikat'] = 'Sangat Kurang';
         }
 
-        // Simpan ke Database
         KinerjaPk::updateOrCreate(
             ['pengawas_id' => $userId, 'bulan' => $request->bulan, 'tahun' => $request->tahun],
             $dataToSave

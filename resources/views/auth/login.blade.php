@@ -16,7 +16,7 @@
                     aria-label="BAPAS Purwokerto"
                 >
                     <img
-                        src="{{ asset('images/bapaspwt.png') }}"
+                        src="{{ asset('images/bapaspwt.webp') }}"
                         alt="Logo BAPAS Purwokerto"
                         class="h-[92%] w-[92%] object-contain"
                     >
@@ -56,7 +56,7 @@
                     </p>
                 </div>
 
-                <form method="POST" action="{{ route('login') }}" class="space-y-5">
+                <form method="POST" action="{{ route('login') }}" class="space-y-6">
                     @csrf
 
                     <!-- Nomor Induk -->
@@ -90,27 +90,31 @@
                                 id="identitas"
                                 class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white py-3 pl-12 pr-4 text-base text-slate-900 shadow-sm transition placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700"
                                 type="text"
-                                inputmode="numeric"
                                 name="identitas"
                                 :value="old('identitas')"
                                 required
                                 autofocus
                                 autocomplete="username"
-                                placeholder="Masukkan maksimal 18 digit angka"
-                                pattern="[0-9]*"
-                                maxlength="18"
-                                title="Hanya angka yang diperbolehkan"
+                                placeholder="Masukkan Nomor Induk Anda"
+                                maxlength="50"
                             />
                         </div>
                     </div>
 
                     <!-- Password -->
                     <div>
-                        <x-input-label
-                            for="password"
-                            :value="__('Password')"
-                            class="mb-2 block text-sm font-bold text-slate-800"
-                        />
+                        <div class="flex items-center justify-between mb-2">
+                            <x-input-label
+                                for="password"
+                                :value="__('Password')"
+                                class="block text-sm font-bold text-slate-800"
+                            />
+
+                            <!-- Informasi Lupa Password -->
+                            <span class="text-xs font-medium italic text-slate-500 hover:text-blue-700 transition cursor-help" title="Silakan lapor kepada Admin Bapas untuk mereset password Anda">
+                                Lupa password? Hubungi Admin
+                            </span>
+                        </div>
 
                         <div class="relative">
                             <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
@@ -180,28 +184,8 @@
                         </div>
                     </div>
 
-                    <!-- Ingat Saya dan Informasi Password -->
-                    <div class="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between">
-                        <label for="remember_me" class="inline-flex cursor-pointer items-center">
-                            <input
-                                id="remember_me"
-                                type="checkbox"
-                                class="rounded border-slate-300 text-blue-900 shadow-sm focus:ring-blue-700"
-                                name="remember"
-                            >
-
-                            <span class="ms-2 text-sm font-medium text-slate-600">
-                                Ingat Saya
-                            </span>
-                        </label>
-
-                        <span class="text-xs italic text-slate-500">
-                            Lupa password? Hubungi Admin
-                        </span>
-                    </div>
-
                     <!-- Tombol Login Manual -->
-                    <div class="pt-1">
+                    <div class="pt-2">
                         <button
                             type="submit"
                             class="inline-flex min-h-[50px] w-full items-center justify-center gap-2 rounded-xl bg-blue-900 px-4 py-3.5 font-bold text-white shadow-sm transition hover:bg-blue-800 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-blue-200"
@@ -221,16 +205,15 @@
                                 />
                             </svg>
 
-                            Masuk Secara Manual
+                            Masuk ke Sistem
                         </button>
                     </div>
 
-                    <!-- Pemisah -->
-                    <div class="relative py-1">
+                    {{-- FITUR LOGIN GOOGLE (DINONAKTIFKAN SEMENTARA MENGGUNAKAN KOMENTAR BLADE)
+                    <div class="relative py-1 mt-2">
                         <div class="absolute inset-0 flex items-center">
                             <div class="w-full border-t border-slate-200"></div>
                         </div>
-
                         <div class="relative flex justify-center text-sm">
                             <span class="bg-white px-4 font-medium text-slate-500">
                                 Atau lebih cepat dengan
@@ -238,7 +221,6 @@
                         </div>
                     </div>
 
-                    <!-- Login Google -->
                     <a
                         href="{{ route('google.login') }}"
                         class="flex min-h-[50px] w-full items-center justify-center gap-3 rounded-xl border border-slate-300 bg-white px-4 py-3.5 font-bold text-slate-700 shadow-sm transition hover:border-slate-400 hover:bg-slate-50 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-slate-200"
@@ -251,12 +233,12 @@
                                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                             </svg>
                         </span>
-
                         Masuk dengan Google
                     </a>
+                    --}}
 
                     <!-- Tautan Registrasi -->
-                    <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-center">
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-center mt-4">
                         <a
                             class="text-sm font-semibold text-blue-700 underline decoration-blue-300 underline-offset-4 transition hover:text-blue-900 hover:decoration-blue-700"
                             href="{{ route('register') }}"
@@ -355,17 +337,13 @@
                     @click="showAlert = false"
                     class="min-h-[48px] w-full rounded-xl bg-blue-900 px-4 py-3 font-bold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-200"
                 >
-                    Tutup Pesan
+                    Tutup
                 </button>
             </div>
         </div>
     </div>
 
     <script>
-        document.getElementById('identitas').addEventListener('input', function(e) {
-            this.value = this.value.replace(/[^0-9]/g, '');
-        });
-
         const passwordInput = document.getElementById('password');
         const toggleButton = document.getElementById('toggle-password');
         const eyeSlashPath = document.getElementById('eye-slash');

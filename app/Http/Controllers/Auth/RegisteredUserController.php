@@ -22,13 +22,13 @@ class RegisteredUserController extends Controller
     {
         // 1. Validasi Input
         $request->validate([
-            'nama' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z\s]+$/'],
-            'nomor_induk' => ['required', 'string', 'max:18', 'regex:/^[0-9]+$/', 'unique:'.User::class],
+            'nama' => ['required', 'string', 'max:255', 'regex:/^[\pL\s.,\'’()\/&-]+$/u'],
+            'nomor_induk' => ['required', 'string', 'max:50', 'regex:/^[\pL\pN\s.,\'’()\/&-]+$/u', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ], [
-            'nama.regex' => 'Format salah: Nama Lengkap hanya boleh berisi huruf dan spasi.',
-            'nomor_induk.regex' => 'Format salah: Nomor Induk hanya boleh berisi angka.',
-            'nomor_induk.max' => 'Nomor Induk tidak boleh lebih dari 18 digit.',
+            'nama.regex' => 'Format salah: Nama Lengkap wajib menggunakan format yang sesuai SK/Spreadsheet (huruf dan titik/koma diizinkan).',
+            'nomor_induk.regex' => 'Format salah: Nomor Induk hanya boleh berisi huruf, angka, spasi, dan tanda baca umum.',
+            'nomor_induk.max' => 'Nomor Induk tidak boleh lebih dari 50 karakter.',
             'nomor_induk.unique' => 'Nomor Induk ini sudah terdaftar di sistem.'
         ]);
 

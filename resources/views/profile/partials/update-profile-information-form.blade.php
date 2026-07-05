@@ -26,7 +26,7 @@
                     </svg>
                 </span>
 
-                <x-text-input id="nama" name="nama" type="text" class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white py-3 pl-12 pr-4 text-base text-slate-900 shadow-sm transition hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700" :value="old('nama', $user->nama)" required autofocus />
+                <x-text-input id="nama" name="nama" type="text" class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white py-3 pl-12 pr-4 text-base text-slate-900 shadow-sm transition hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700" :value="old('nama', $user->nama)" required autofocus pattern="[A-Za-zÀ-ÖØ-öø-ÿ\s.,'’()\/&-]+" title="Hanya huruf, spasi, dan tanda baca umum yang diperbolehkan" />
             </div>
 
             <x-input-error class="mt-2" :messages="$errors->get('nama')" />
@@ -43,7 +43,7 @@
                     </svg>
                 </span>
 
-                <x-text-input id="nomor_induk" name="nomor_induk" type="text" inputmode="numeric" maxlength="18" class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white py-3 pl-12 pr-4 text-base text-slate-900 shadow-sm transition hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700" :value="old('nomor_induk', $user->nomor_induk)" required />
+                <x-text-input id="nomor_induk" name="nomor_induk" type="text" maxlength="50" class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white py-3 pl-12 pr-4 text-base text-slate-900 shadow-sm transition hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700" :value="old('nomor_induk', $user->nomor_induk)" required />
             </div>
 
             <x-input-error class="mt-2" :messages="$errors->get('nomor_induk')" />

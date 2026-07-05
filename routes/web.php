@@ -6,7 +6,7 @@ use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\KinerjaPkController;
 use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\Auth\GoogleAuthController;
+// use App\Http\Controllers\Auth\GoogleAuthController; // Nonaktifkan sementara
 
 // 1. RUTE UTAMA: Otomatis arahkan sesuai status login
 Route::get('/', function () {
@@ -16,9 +16,9 @@ Route::get('/', function () {
     return redirect('/login');
 });
 
-// Route Google Auth (Tidak perlu login)
-Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])->name('google.login');
-Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
+// Route Google Auth (SEMENTARA DINONAKTIFKAN)
+// Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])->name('google.login');
+// Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
 
 // Grup Route yang butuh Login
 Route::middleware('auth')->group(function () {
@@ -29,7 +29,6 @@ Route::middleware('auth')->group(function () {
         if ($role === 'pengawas') return redirect()->route('dashboard.pengawas');
         return redirect()->route('dashboard.narapidana');
     })->name('dashboard');
-
 
     // ====================================================================
     // 1. ROUTE KHUSUS ADMIN
@@ -48,6 +47,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/admin/narapidana/create', [AdminController::class, 'narapidanaCreate'])->name('admin.narapidana.create');
         Route::get('/admin/narapidana/{id}/edit', [AdminController::class, 'narapidanaEdit'])->name('admin.narapidana.edit');
         Route::post('/admin/narapidana', [AdminController::class, 'storeNarapidana'])->name('admin.narapidana.store');
+        Route::post('/admin/narapidana/import', [AdminController::class, 'importNarapidana'])->name('admin.narapidana.import');
+
+        // Manajemen Rekap dan Pemetaan Data PK-Klien
+        Route::get('/admin/rekap', [AdminController::class, 'rekapIndex'])->name('admin.rekap.index');
+        Route::post('/admin/rekap/hubungkan', [AdminController::class, 'hubungkanPkKlien'])->name('admin.rekap.hubungkan');
+        Route::post('/admin/rekap/lepas/{id}', [AdminController::class, 'lepasKlien'])->name('admin.rekap.lepas');
 
         // Manajemen Halaman Lain (Kinerja, Absensi)
         Route::get('/admin/kinerja', [AdminController::class, 'kinerjaIndex'])->name('admin.kinerja.index');
@@ -65,7 +70,6 @@ Route::middleware('auth')->group(function () {
     // 2. ROUTE KHUSUS PK/PENGAWAS
     Route::middleware('role:pengawas')->group(function () {
         Route::get('/pengawas/dashboard', [AbsensiController::class, 'indexPengawas'])->name('dashboard.pengawas');
-
         Route::post('/pengawas/kinerja', [KinerjaPkController::class, 'store'])->name('kinerja-pk.store');
     });
 
