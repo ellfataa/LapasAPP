@@ -71,6 +71,9 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:pengawas')->group(function () {
         Route::get('/pengawas/dashboard', [AbsensiController::class, 'indexPengawas'])->name('dashboard.pengawas');
         Route::post('/pengawas/kinerja', [KinerjaPkController::class, 'store'])->name('kinerja-pk.store');
+
+        // RUTE BARU AUTO-SAVE DRAFT KINERJA
+        Route::post('/pengawas/save-draft', [AbsensiController::class, 'saveDraftPk'])->name('pengawas.save_draft');
     });
 
     // ====================================================================

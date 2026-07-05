@@ -26,7 +26,17 @@
                 </div>
 
                 <div class="p-5 sm:p-7 lg:p-8">
-                    <!-- ALPINE.JS: MENGGUNAKAN LOCALSTORAGE AGAR TIDAK TER-RESET SAAT REFRESH -->
+
+                    <!-- PERBAIKAN: MEMISAHKAN DATA PHP KE SCRIPT GLOBAL AGAR TIDAK ERROR HTML -->
+                    @php
+                        $draftData = Auth::user()->kinerja_draft ? json_decode(Auth::user()->kinerja_draft, true) : null;
+                    @endphp
+                    <script>
+                        window.serverKinerjaDraft = {!! json_encode($draftData) !!};
+                        window.saveDraftUrl = "{{ route('pengawas.save_draft') }}";
+                        window.csrfToken = "{{ csrf_token() }}";
+                    </script>
+
                     <form action="{{ route('kinerja-pk.store') }}" method="POST" enctype="multipart/form-data" x-data="{
                         bulan_kinerja: '{{ date('n') }}',
                         tahun_kinerja: '{{ date('Y') }}',
@@ -45,42 +55,58 @@
                         pembimbinganPersen: 0,
                         skorDihitung: false,
 
-                        init() {
-                            // 1. Coba ambil data draf dari LocalStorage saat halaman dimuat
-                            const draft = localStorage.getItem('kinerja_draft_{{ Auth::id() }}');
-                            if (draft) {
-                                const parsed = JSON.parse(draft);
-                                if (parsed.bulan_kinerja) this.bulan_kinerja = parsed.bulan_kinerja;
-                                if (parsed.tahun_kinerja) this.tahun_kinerja = parsed.tahun_kinerja;
-                                if (parsed.klien) this.klien = { ...this.klien, ...parsed.klien };
-                                if (parsed.pengawasan) this.pengawasan = parsed.pengawasan;
-                                if (parsed.skorDihitung !== undefined) this.skorDihitung = parsed.skorDihitung;
+                        draftTimeout: null,
 
-                                // Jika sebelumnya user sudah hitung skor, maka jalankan ulang
+                        init() {
+                            // 1. Ambil data draf dari variable global yang sudah di-inject oleh PHP
+                            const serverDraft = window.serverKinerjaDraft;
+
+                            if (serverDraft) {
+                                if (serverDraft.bulan_kinerja) this.bulan_kinerja = serverDraft.bulan_kinerja;
+                                if (serverDraft.tahun_kinerja) this.tahun_kinerja = serverDraft.tahun_kinerja;
+                                if (serverDraft.klien) this.klien = { ...this.klien, ...serverDraft.klien };
+                                if (serverDraft.pengawasan) this.pengawasan = serverDraft.pengawasan;
+                                if (serverDraft.skorDihitung !== undefined) this.skorDihitung = serverDraft.skorDihitung;
+
                                 if (this.skorDihitung) {
                                     this.hitungSkor();
                                 }
                             }
 
-                            // 2. Pantau semua perubahan dan otomatis simpan ke LocalStorage
+                            // 2. Pantau semua perubahan untuk disimpan otomatis (Auto-Save)
                             this.$watch('bulan_kinerja', () => this.saveDraft());
                             this.$watch('tahun_kinerja', () => this.saveDraft());
                             this.$watch('skorDihitung', () => this.saveDraft());
                             this.$watch('klien', () => {
-                                this.skorDihitung = false; // Meminta hitung ulang jika pilihan klien diubah
+                                this.skorDihitung = false;
                                 this.saveDraft();
                             }, { deep: true });
                             this.$watch('pengawasan', () => this.saveDraft(), { deep: true });
                         },
 
                         saveDraft() {
-                            localStorage.setItem('kinerja_draft_{{ Auth::id() }}', JSON.stringify({
-                                bulan_kinerja: this.bulan_kinerja,
-                                tahun_kinerja: this.tahun_kinerja,
-                                klien: this.klien,
-                                pengawasan: this.pengawasan,
-                                skorDihitung: this.skorDihitung
-                            }));
+                            // Menyimpan jeda 1 detik agar tidak mengirim data ke database tiap 1 huruf diketik
+                            clearTimeout(this.draftTimeout);
+                            this.draftTimeout = setTimeout(() => {
+                                const draftJSON = JSON.stringify({
+                                    bulan_kinerja: this.bulan_kinerja,
+                                    tahun_kinerja: this.tahun_kinerja,
+                                    klien: this.klien,
+                                    pengawasan: this.pengawasan,
+                                    skorDihitung: this.skorDihitung
+                                });
+
+                                fetch(window.saveDraftUrl, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': window.csrfToken,
+                                        'Accept': 'application/json'
+                                    },
+                                    body: JSON.stringify({ draft: draftJSON })
+                                }).catch(err => console.error('Auto-save gagal:', err));
+
+                            }, 1000);
                         },
 
                         hitungSkor() {
@@ -103,14 +129,12 @@
                             if (k > 0 && !isNaN(b)) return ((b / k) * 100);
                             return 0;
                         },
-
                         get rataRata() {
                             let total = parseFloat(this.litmas_persen) || 0;
                             total += parseFloat(this.pembimbinganPersen) || 0;
                             total += parseFloat(this.calc(this.pengawasan.kuota, this.pengawasan.berhasil)) || 0;
                             return (total / 3).toFixed(1);
                         },
-
                         get predikat() {
                             let rata = parseFloat(this.rataRata);
                             if(rata >= 91) return 'Sangat Baik';
@@ -161,7 +185,7 @@
                                     <span class="text-2xl font-extrabold text-red-600">{{ $dataLitmasRealtime['belum_selesai'] ?? 0 }}</span>
                                 </div>
                                 <div class="rounded-xl border border-blue-200 bg-blue-100 p-4 text-center shadow-sm">
-                                    <span class="mb-1 block text-xs font-bold uppercase tracking-wide text-blue-800">Skor Kinerja</span>
+                                    <span class="mb-1 block text-xs font-bold uppercase tracking-wide text-blue-800">% Kinerja</span>
                                     <span class="text-2xl font-extrabold text-blue-700">{{ $dataLitmasRealtime['kinerja'] ?? '0%' }}</span>
                                 </div>
                             </div>
@@ -182,7 +206,7 @@
                                 <div class="lg:col-span-8">
                                     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
                                         <div class="bg-slate-100 border-b border-slate-200 px-4 py-3 text-sm font-bold text-slate-700 flex justify-between">
-                                            <span>Nama Klien/Narapidana</span>
+                                            <span>Nama Klien / Narapidana</span>
                                             <span>Status Pekerjaan</span>
                                         </div>
                                         <div class="max-h-[300px] overflow-y-auto custom-scrollbar divide-y divide-slate-100">
@@ -190,7 +214,7 @@
                                                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 hover:bg-slate-50 transition">
                                                     <div class="text-sm font-bold text-slate-800">
                                                         {{ $loop->iteration }}. {{ $klien->nama }}
-                                                        <span class="block text-xs font-medium text-slate-500 mt-0.5">NIK/NO REG: {{ $klien->nomor_induk }}</span>
+                                                        <span class="block text-xs font-medium text-slate-500 mt-0.5">NIK: {{ $klien->nomor_induk }}</span>
                                                     </div>
                                                     <select name="pembimbingan_klien[{{ $klien->id }}]"
                                                             x-model="klien['{{ $klien->id }}']"
@@ -220,7 +244,7 @@
                                         <!-- Ornamen desain blur di pojok kanan atas -->
                                         <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-5 rounded-full blur-xl pointer-events-none"></div>
 
-                                        <p class="text-indigo-200 text-xs font-bold uppercase tracking-widest mb-1 relative z-10">Skor Kinerja</p>
+                                        <p class="text-indigo-200 text-xs font-bold uppercase tracking-widest mb-1 relative z-10">Skor Kinerja Pembimbingan</p>
 
                                         <div class="flex items-end gap-2 mb-5 relative z-10">
                                             <span class="text-5xl font-extrabold" x-text="pembimbinganPersen.toFixed(1)"></span>
@@ -253,39 +277,30 @@
                             </div>
                         </article>
 
-                        <!-- KARTU 3: PENGAWASAN -->
-                        <article class="mb-8 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 transition duration-200 hover:border-blue-200 hover:shadow-sm">
-                            <div class="border-b border-slate-200 bg-white px-5 py-4 sm:px-6">
-                                <h4 class="flex items-center gap-3 text-base font-bold text-slate-900 sm:text-lg">
+                        <!-- KARTU 3: PENGAWASAN (OTOMATIS) -->
+                        <article class="mb-8 overflow-hidden rounded-2xl border border-blue-200 bg-blue-50 transition duration-200 hover:shadow-sm">
+                            <div class="border-b border-blue-200 bg-blue-100 px-5 py-4 sm:px-6">
+                                <h4 class="flex items-center gap-3 text-base font-bold text-blue-950 sm:text-lg">
                                     <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-900 text-sm font-extrabold text-white shadow-sm">3</span>
-                                    Pengawasan
+                                    Pengawasan (Otomatis dari Absensi Klien)
                                 </h4>
                             </div>
 
-                            <div class="grid grid-cols-1 items-start gap-5 p-5 sm:p-6 lg:grid-cols-2 xl:grid-cols-5">
+                            <div class="grid grid-cols-1 items-start gap-5 p-5 sm:p-6 lg:grid-cols-3">
                                 <div>
-                                    <label class="mb-2 block text-sm font-bold text-slate-800">Kuota Beban (Bulan)</label>
-                                    <input type="number" name="pengawasan_kuota" x-model.number="pengawasan.kuota" min="0" required class="block min-h-[44px] w-full rounded-xl border-slate-300 bg-white px-4 text-base shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <label class="mb-2 block text-sm font-bold text-slate-800">Total Klien Diampu</label>
+                                    <input type="number" name="pengawasan_kuota" value="{{ $dataPengawasanOtomatis['kuota'] }}" readonly class="block min-h-[44px] w-full rounded-xl border-slate-200 bg-slate-100 px-4 text-base shadow-sm font-bold text-slate-600">
                                 </div>
                                 <div>
-                                    <label class="mb-2 block text-sm font-bold text-slate-800">Berhasil Dilaksanakan</label>
-                                    <input type="number" name="pengawasan_berhasil" x-model.number="pengawasan.berhasil" min="0" required class="block min-h-[44px] w-full rounded-xl border-slate-300 bg-white px-4 text-base shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <label class="mb-2 block text-sm font-bold text-slate-800">Klien Berhasil Absen</label>
+                                    <input type="number" name="pengawasan_berhasil" value="{{ $dataPengawasanOtomatis['berhasil'] }}" readonly class="block min-h-[44px] w-full rounded-xl border-slate-200 bg-slate-100 px-4 text-base shadow-sm font-bold text-emerald-700">
                                 </div>
                                 <div>
-                                    <label class="mb-2 block text-sm font-bold text-slate-800">Kalkulasi %</label>
+                                    <label class="mb-2 block text-sm font-bold text-slate-800">Skor Pengawasan %</label>
                                     <div class="relative">
-                                        <input type="text" :value="calc(pengawasan.kuota, pengawasan.berhasil).toFixed(1)" readonly class="block min-h-[44px] w-full cursor-not-allowed rounded-xl border-slate-300 bg-slate-200 px-4 font-extrabold text-slate-700 shadow-sm focus:ring-0">
+                                        <input type="text" value="{{ $dataPengawasanOtomatis['kuota'] > 0 ? number_format(($dataPengawasanOtomatis['berhasil'] / $dataPengawasanOtomatis['kuota']) * 100, 1) : 0 }}" readonly class="block min-h-[44px] w-full cursor-not-allowed rounded-xl border-slate-300 bg-slate-200 px-4 font-extrabold text-blue-800 shadow-sm">
                                         <span class="absolute right-3 top-2.5 font-bold text-slate-600">%</span>
                                     </div>
-                                </div>
-                                <div>
-                                    <label class="mb-2 block text-sm font-bold text-slate-800">Upload Bukti File</label>
-                                    <input type="file" name="pengawasan_file[]" multiple required accept=".jpg,.jpeg,.png,.pdf" onchange="updateFileList('pengawasan', this)" class="block w-full cursor-pointer border border-slate-300 rounded-xl text-xs bg-white file:border-0 file:bg-blue-900 file:text-white file:font-bold file:px-3 file:py-2.5 shadow-sm hover:file:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-100">
-                                    <div id="file-list-pengawasan" class="mt-2 space-y-1 text-xs empty:hidden"></div>
-                                </div>
-                                <div>
-                                    <label class="mb-2 block text-sm font-bold text-slate-800">Link G-Drive <span class="font-normal text-slate-400">(Ops)</span></label>
-                                    <input type="url" name="pengawasan_link" placeholder="https://..." class="block min-h-[44px] w-full rounded-xl border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 </div>
                             </div>
                         </article>
@@ -552,15 +567,12 @@
             </div>
         </div>
 
-        <!-- MODAL ALERT & PEMBERSIHAN DRAFT LOCALSTORAGE -->
+        <!-- MODAL ALERT -->
         <div x-show="showAlert" style="display: none;" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/65 px-4 py-6 backdrop-blur-sm transition-opacity" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
             <div @click="showAlert = false" class="absolute inset-0 cursor-pointer"></div>
             <div class="relative z-10 w-full max-w-md transform overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-2xl transition-all sm:p-8">
 
                 @if(session('success'))
-                    <!-- PENTING: Bersihkan localStorage hanya ketika form BERHASIL disimpan -->
-                    <script>localStorage.removeItem('kinerja_draft_{{ Auth::id() }}');</script>
-
                     <div class="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 ring-1 ring-inset ring-emerald-100">
                         <svg class="h-10 w-10 text-emerald-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
                     </div>

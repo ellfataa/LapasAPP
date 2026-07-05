@@ -147,6 +147,9 @@ class KinerjaPkController extends Controller
             $dataToSave
         );
 
+        // TAMBAHAN: Hapus draf dari database karena form sudah berhasil disubmit
+        \App\Models\User::where('id', $userId)->update(['kinerja_draft' => null]);
+
         $namaBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
         $bulanNama = $namaBulan[$request->bulan - 1] ?? $request->bulan;
 

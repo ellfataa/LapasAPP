@@ -22,6 +22,9 @@ return new class extends Migration
             // TAMBAHAN: Kolom untuk menyimpan ID PK Pembimbing
             $table->unsignedBigInteger('pembimbing_id')->nullable();
 
+            // TAMBAHAN: Kolom untuk menyimpan Auto-Save draf PK
+            $table->longText('kinerja_draft')->nullable();
+
             $table->string('password');
             $table->string('google_id')->nullable();
             $table->rememberToken();

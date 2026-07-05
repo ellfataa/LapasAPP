@@ -10,8 +10,7 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    // TAMBAHKAN pembimbing_id KE DALAM FILLABLE
-    protected $fillable = ['nama', 'email', 'nomor_induk', 'password', 'role', 'google_id', 'pembimbing_id'];
+    protected $fillable = ['nama', 'email', 'nomor_induk', 'password', 'role', 'google_id', 'pembimbing_id', 'kinerja_draft'];
 
     protected $hidden = ['password', 'remember_token'];
 

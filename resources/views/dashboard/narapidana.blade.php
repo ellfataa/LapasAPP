@@ -6,8 +6,8 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A9.004 9.004 0 0112 15c2.133 0 4.094.742 5.637 1.982M15 11a3 3 0 11-6 0 3 3 0 016 0zm6 1a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
             </div>
-            <h2 class="font-bold text-xl sm:text-2xl md:text-3xl text-slate-900 leading-tight tracking-tight">
-                Dashboard, Selamat Datang {{ Auth::user()->nama }}!
+            <h2 class="text-xl sm:text-2xl md:text-3xl text-slate-900 leading-tight tracking-tight">
+                Dashboard, Selamat Datang <span class="font-bold">{{ Auth::user()->nama }}</span>!
             </h2>
         </div>
     </x-slot>
@@ -15,6 +15,7 @@
     <div class="min-h-screen bg-slate-100 py-6 sm:py-10" x-data="{ showModal: false, imgSrc: '', showAlert: {{ session('success') || $errors->any() ? 'true' : 'false' }} }">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:space-y-8 sm:px-6 lg:px-8">
 
+            <!-- BAGIAN FORM LAPORAN ABSENSI -->
             <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                 <div class="flex items-center gap-4 border-b border-slate-200 bg-gradient-to-r from-slate-900 to-blue-900 px-5 py-5 sm:px-7 sm:py-6">
                     <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white ring-1 ring-inset ring-white/20">
@@ -28,49 +29,67 @@
                 </div>
 
                 <div class="p-5 sm:p-7 lg:p-8">
-                    <form action="{{ route('absensi.store') }}" method="POST" enctype="multipart/form-data">
-                        @csrf
-
-                        <div class="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
-                            <div>
-                                <label for="tanggal" class="mb-2 block text-sm font-bold text-slate-800 sm:text-base">Tanggal Kegiatan</label>
-                                <input id="tanggal" name="tanggal" type="date" class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm transition placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700" required max="{{ date('Y-m-d') }}" value="{{ old('tanggal', date('Y-m-d')) }}" />
-                            </div>
-
-                            <div>
-                                <label for="jenis_kegiatan" class="mb-2 block text-sm font-bold text-slate-800 sm:text-base">Nama Kegiatan</label>
-                                <input id="jenis_kegiatan" name="jenis_kegiatan" type="text" class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm transition placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700" required placeholder="Contoh: Membersihkan selokan" value="{{ old('jenis_kegiatan') }}" />
-                            </div>
-
-                            <div class="md:col-span-2">
-                                <label for="pengawas_id" class="mb-2 block text-sm font-bold text-slate-800 sm:text-base">Penanggung Jawab PK/Pengawas</label>
-                                <select id="pengawas_id" name="pengawas_id" required class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm transition hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700 cursor-pointer">
-                                    <option value="" disabled selected>-- Pilih PK Lapas yang Mengampu Anda --</option>
-                                    @foreach($daftarPengawas as $pk)
-                                        <option value="{{ $pk->id }}" {{ old('pengawas_id') == $pk->id ? 'selected' : '' }}>
-                                            {{ $pk->nama }} (NIP/NRP: {{ $pk->nomor_induk }})
-                                        </option>
-                                    @endforeach
-                                </select>
+                    @if(empty($pembimbingSaya))
+                        <!-- Peringatan Jika Klien Belum Di-assign PK -->
+                        <div class="mb-6 rounded-xl border border-red-200 bg-red-50 p-5 shadow-sm">
+                            <div class="flex items-start gap-4">
+                                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600">
+                                    <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                </span>
+                                <div>
+                                    <h4 class="text-base font-bold text-red-800">Anda Belum Memiliki PK Pembimbing!</h4>
+                                    <p class="mt-1 text-sm text-red-700 leading-relaxed">Admin belum menetapkan Pengawas Kemasyarakatan (PK) untuk Anda. Anda tidak dapat melakukan laporan absen wajib sebelum Admin menghubungkan akun Anda dengan PK. Silakan hubungi Admin Bapas.</p>
+                                </div>
                             </div>
                         </div>
+                    @else
+                        <!-- Form Laporan Absensi Normal -->
+                        <form action="{{ route('absensi.store') }}" method="POST" enctype="multipart/form-data">
+                            @csrf
 
-                        <div class="mt-6">
-                            <label for="bukti_file" class="mb-2 block text-sm font-bold text-slate-800 sm:text-base">Unggah Bukti Foto (Maksimal 10MB)</label>
-                            <div class="rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-3 transition hover:border-blue-400 hover:bg-blue-50/60 sm:p-4">
-                                <input id="bukti_file" name="bukti_file" type="file" class="block w-full cursor-pointer rounded-xl bg-white text-sm text-slate-600 shadow-sm ring-1 ring-inset ring-slate-200 file:mr-3 file:h-12 file:cursor-pointer file:border-0 file:bg-blue-900 file:px-5 file:py-3 file:text-sm file:font-bold file:text-white hover:file:bg-blue-800 sm:text-base sm:file:mr-4 sm:file:px-6 sm:file:text-base" accept="image/jpeg, image/png, image/jpg" required />
+                            <div class="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
+                                <div>
+                                    <label for="tanggal" class="mb-2 block text-sm font-bold text-slate-800 sm:text-base">Tanggal Kegiatan</label>
+                                    <input id="tanggal" name="tanggal" type="date" class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm transition placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700" required max="{{ date('Y-m-d') }}" value="{{ old('tanggal', date('Y-m-d')) }}" />
+                                </div>
+
+                                <div>
+                                    <label for="jenis_kegiatan" class="mb-2 block text-sm font-bold text-slate-800 sm:text-base">Nama Kegiatan</label>
+                                    <input id="jenis_kegiatan" name="jenis_kegiatan" type="text" class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm transition placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700" required placeholder="Contoh: Membersihkan selokan" value="{{ old('jenis_kegiatan') }}" />
+                                </div>
+
+                                <div class="md:col-span-2">
+                                    <label class="mb-2 block text-sm font-bold text-slate-800 sm:text-base">Penanggung Jawab PK/Pengawas Anda</label>
+
+                                    <!-- Field Read-Only karena PK sudah diatur dari Admin -->
+                                    <div class="flex items-center gap-3 min-h-[48px] w-full rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-base shadow-sm">
+                                        <svg class="h-6 w-6 text-blue-700 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        <div class="min-w-0">
+                                            <span class="block text-blue-950 font-bold truncate">{{ $pembimbingSaya->nama }}</span>
+                                            <span class="block text-blue-700 text-xs font-medium truncate">NRP/NIP: {{ $pembimbingSaya->nomor_induk }}</span>
+                                        </div>
+                                    </div>
+                                    <p class="mt-2 text-xs text-red-500 italic">*Laporan ini akan secara otomatis dikirimkan ke PK/Pengawas Anda.</p>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="mt-7 flex justify-end sm:mt-8">
-                            <button type="submit" class="inline-flex min-h-[48px] w-full items-center justify-center rounded-xl bg-emerald-700 px-7 py-3.5 text-base font-bold text-white shadow-sm transition hover:bg-emerald-800 hover:shadow-md focus:bg-emerald-800 focus:outline-none focus:ring-4 focus:ring-emerald-200 sm:w-auto sm:text-lg">
-                                <svg class="mr-2 h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                                </svg>
-                                Kirim Sekarang
-                            </button>
-                        </div>
-                    </form>
+                            <div class="mt-6">
+                                <label for="bukti_file" class="mb-2 block text-sm font-bold text-slate-800 sm:text-base">Unggah Bukti Foto (Maksimal 10MB)</label>
+                                <div class="rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-3 transition hover:border-blue-400 hover:bg-blue-50/60 sm:p-4">
+                                    <input id="bukti_file" name="bukti_file" type="file" class="block w-full cursor-pointer rounded-xl bg-white text-sm text-slate-600 shadow-sm ring-1 ring-inset ring-slate-200 file:mr-3 file:h-12 file:cursor-pointer file:border-0 file:bg-blue-900 file:px-5 file:py-3 file:text-sm file:font-bold file:text-white hover:file:bg-blue-800 sm:text-base sm:file:mr-4 sm:file:px-6 sm:file:text-base" accept="image/jpeg, image/png, image/jpg" required />
+                                </div>
+                            </div>
+
+                            <div class="mt-7 flex justify-end sm:mt-8">
+                                <button type="submit" class="inline-flex min-h-[48px] w-full items-center justify-center rounded-xl bg-emerald-700 px-7 py-3.5 text-base font-bold text-white shadow-sm transition hover:bg-emerald-800 hover:shadow-md focus:bg-emerald-800 focus:outline-none focus:ring-4 focus:ring-emerald-200 sm:w-auto sm:text-lg">
+                                    <svg class="mr-2 h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                    </svg>
+                                    Kirim
+                                </button>
+                            </div>
+                        </form>
+                    @endif
                 </div>
             </section>
 
