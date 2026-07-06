@@ -28,7 +28,7 @@ class KinerjaPkController extends Controller
             'pengawasan_berhasil' => ['required', 'numeric', 'min:0'],
         ];
 
-        // PERUBAHAN: Hanya Pengawasan yang membutuhkan File & Link
+        // Hanya Pengawasan yang membutuhkan File & Link
         $kategoriList = ['pengawasan'];
 
         foreach ($kategoriList as $kategori) {
@@ -81,7 +81,7 @@ class KinerjaPkController extends Controller
         $dataToSave['pembimbingan_berhasil'] = $jumlahBekerja;
         $dataToSave['pembimbingan_detail'] = json_encode($detailKlien);
 
-        // PERUBAHAN: Set null untuk file dan link pembimbingan karena sudah dihapus dari form
+        // Set null untuk file dan link pembimbingan karena sudah dihapus dari form
         $dataToSave['pembimbingan_file'] = null;
         $dataToSave['pembimbingan_link'] = null;
 
@@ -147,7 +147,7 @@ class KinerjaPkController extends Controller
             $dataToSave
         );
 
-        // TAMBAHAN: Hapus draf dari database karena form sudah berhasil disubmit
+        // Hapus draf dari database karena form sudah berhasil disubmit
         \App\Models\User::where('id', $userId)->update(['kinerja_draft' => null]);
 
         $namaBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];

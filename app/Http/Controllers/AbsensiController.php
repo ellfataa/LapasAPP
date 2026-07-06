@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-// Pastikan Google Client & Sheets Service dipanggil
 use Google\Client;
 use Google\Service\Sheets;
 use Google\Service\Sheets\ValueRange;
@@ -17,8 +16,7 @@ use Google\Service\Sheets\ValueRange;
 class AbsensiController extends Controller
 {
     // ==========================================
-    // BAGIAN 1: FITUR NARAPIDANA / KLIEN
-    // ==========================================
+    // BAGIAN 1: FITUR KLIEN/NARAPIDANA
     public function indexNarapidana(Request $request)
     {
         $user = Auth::user();
@@ -53,12 +51,10 @@ class AbsensiController extends Controller
     {
         $user = Auth::user();
 
-        // 1. Validasi PK Pembimbing
         if (empty($user->pembimbing_id)) {
             return redirect()->back()->withErrors(['pembimbing' => 'Anda belum dihubungkan dengan PK Pembimbing oleh Admin. Tidak dapat melakukan absensi.']);
         }
 
-        // 2. Validasi Batas 1 Kali Absen Per Bulan
         $bulanInput = \Carbon\Carbon::parse($request->tanggal)->format('m');
         $tahunInput = \Carbon\Carbon::parse($request->tanggal)->format('Y');
 
@@ -79,7 +75,6 @@ class AbsensiController extends Controller
 
         $path = $request->file('bukti_file')->store('bukti_kegiatan', 'public');
 
-        // Simpan Data ke Database Internal
         $absensiBaru = AbsensiKegiatan::create([
             'narapidana_id'  => $user->id,
             'pengawas_id'    => $user->pembimbing_id,
@@ -88,13 +83,11 @@ class AbsensiController extends Controller
             'bukti_file'     => $path,
         ]);
 
-        // 3. SINKRONISASI KE GOOGLE SHEETS API
         try {
             $this->pushImageToGoogleSheets($absensiBaru, $user);
         } catch (\Exception $e) {
             Log::error('Google Sheets Sync Failed (Store): ' . $e->getMessage());
-            // PERBAIKAN: Beritahu pengguna jika masuk database lokal tapi gagal ke Spreadsheet
-            return redirect()->back()->withErrors(['google_sync' => 'Absensi berhasil tersimpan di web, NAMUN GAGAL masuk ke Spreadsheet Bapas. Alasan: ' . $e->getMessage()]);
+            return redirect()->back()->withErrors(['google_sync' => 'Absensi tersimpan di web, NAMUN GAGAL masuk ke Spreadsheet. Alasan: ' . $e->getMessage()]);
         }
 
         return redirect()->back()->with('success', 'Absensi dan bukti kegiatan berhasil dikirim ke Web dan Spreadsheet!');
@@ -155,7 +148,6 @@ class AbsensiController extends Controller
 
         $absensi->update($dataToUpdate);
 
-        // UPDATE FOTO KE GOOGLE SHEETS JIKA BERUBAH
         if ($isImageChanged) {
             try {
                 $this->pushImageToGoogleSheets($absensi, $user);
@@ -170,122 +162,94 @@ class AbsensiController extends Controller
 
 
     // ==========================================
-    // BAGIAN GOOGLE SHEETS API LOGIC
-    // ==========================================
+    // BAGIAN GOOGLE SHEETS API LOGIC (KATEGORI PENGAWASAN)
     private function pushImageToGoogleSheets(AbsensiKegiatan $absensi, User $klien): void
     {
-        // 1. Ambil Nama Tab Sheet
+        // 1. Ambil Nama Tab Sheet (Sesuai Nama PK)
         $pembimbing = User::find($absensi->pengawas_id);
         if (!$pembimbing) throw new \Exception("Pengawas tidak ditemukan di database.");
-
-        // KITA TAMBAHKAN PROTEKSI UNTUK MENGHAPUS TITIK DI AKHIR NAMA JIKA ADA
-        $sheetName = rtrim(trim($pembimbing->nama), '.');
+        $sheetName = trim($pembimbing->nama); // Pastikan nama di DB sama dengan Nama Tab
 
         // 2. Tentukan Kriteria Pencarian
-        $klienName = trim($klien->nama);
         $bulanIndo = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
         $bulanTarget = $bulanIndo[\Carbon\Carbon::parse($absensi->tanggal_waktu)->format('n') - 1];
-
-        // Format Tanggal untuk diinput ke Sheet (Contoh: 15 Juli 2026)
         $tanggalApelTeks = \Carbon\Carbon::parse($absensi->tanggal_waktu)->translatedFormat('d F Y');
 
-        // 3. Konfigurasi Kredensial Google Client
+        // 3. Konfigurasi
         $client = new Client();
-        $client->setApplicationName('Bapas Sync App');
+        $client->setAuthConfig(storage_path('app/google-credentials.json'));
         $client->setScopes([Sheets::SPREADSHEETS]);
-
-        // PROTEKSI: Cek apakah file credentials benar-benar ada di Hostinger
-        $credentialPath = storage_path('app/google-credentials.json');
-        if (!file_exists($credentialPath)) {
-            throw new \Exception("File Kredensial API tidak ditemukan di server. Harap upload google-credentials.json ke folder storage/app/.");
-        }
-        $client->setAuthConfig($credentialPath);
-
         $service = new Sheets($client);
-        $spreadsheetId = '1yHJCmGakpsyLx16FmWeNIyKp6EzA9Y8VS3aI_D3eTEg';
 
-        // 4. Ambil seluruh data Sheet untuk dipindai (A1 sampai ZZ200)
-        try {
-            $response = $service->spreadsheets_values->get($spreadsheetId, "'{$sheetName}'!A1:ZZ200");
-        } catch (\Exception $apiErr) {
-            throw new \Exception("Gagal mengakses Tab '{$sheetName}'. Pastikan tab tersebut ada dan akun Service Account sudah dijadikan Editor. Detail API: " . $apiErr->getMessage());
-        }
+        // TETAP SATU ID UNTUK SEMUA PK (KATEGORI PENGAWASAN)
+        $spreadsheetId = '1dMWij_J6P_lvC0H2x19DFpqCSjAMDFsCdeT_H1S61HE';
 
+        $response = $service->spreadsheets_values->get($spreadsheetId, "'{$sheetName}'!A1:ZZ200");
         $values = $response->getValues();
 
-        if (empty($values)) {
-            throw new \Exception("Sheet tab '{$sheetName}' kosong.");
-        }
+        if (empty($values)) throw new \Exception("Tab '{$sheetName}' kosong.");
 
         $targetRow = -1;
         $targetColIndexFoto = -1;
+        $targetColIndexTanggal = -1;
 
-        // --- A. CARI BARIS (ROW) BERDASARKAN NAMA KLIEN ---
+        // --- A. CARI BARIS (NAMA KLIEN) ---
+        $klienNameWeb = strtolower(trim($klien->nama));
         foreach ($values as $rowIndex => $row) {
-            if (isset($row[1]) && trim(strtolower($row[1])) === strtolower($klienName)) {
-                $targetRow = $rowIndex + 1; // Ditambah 1 karena API Sheets menggunakan base-1
+            $sheetNameCell = strtolower(trim($row[1] ?? '')); // Kolom B adalah index 1
+            if ($sheetNameCell === $klienNameWeb) {
+                $targetRow = $rowIndex + 1;
                 break;
             }
         }
 
-        // --- B. CARI KOLOM (COLUMN) BERDASARKAN BULAN & "FOTO" ---
+        // --- B. CARI KOLOM (BULAN, FOTO, TANGGAL) ---
+        // Penanganan Merge Cell (Bulan Juli akan muncul di index pertama, sisanya kosong)
         $rowBulan = $values[1] ?? [];
         $rowSubHeader = $values[2] ?? [];
+        $currentMonth = '';
 
-        $currentMonthTracker = '';
         foreach ($rowSubHeader as $colIndex => $subHeader) {
-            // Karena sel bulan di-merge, tulisan bulannya hanya ada di sel paling kiri
+            // Update nama bulan hanya jika cell di baris 2 tidak kosong
             if (!empty($rowBulan[$colIndex])) {
-                $currentMonthTracker = trim($rowBulan[$colIndex]);
+                $currentMonth = trim($rowBulan[$colIndex]);
             }
 
-            // Jika berada di bawah bulan target, cari sub-header "Foto"
-            if (strtolower($currentMonthTracker) === strtolower($bulanTarget)) {
-                if (strtolower(trim($subHeader)) === 'foto') {
-                    $targetColIndexFoto = $colIndex;
-                    break;
-                }
+            // Jika bulan saat ini sesuai target
+            if (strtolower($currentMonth) === strtolower($bulanTarget)) {
+                $subHeaderClean = strtolower(trim($subHeader));
+                if ($subHeaderClean === 'foto') $targetColIndexFoto = $colIndex;
+                if (str_contains($subHeaderClean, 'tanggal')) $targetColIndexTanggal = $colIndex;
             }
         }
 
-        // --- C. EKSEKUSI PENULISAN (BATCH UPDATE) ---
+        // --- C. EKSEKUSI ---
         if ($targetRow !== -1 && $targetColIndexFoto !== -1) {
-
-            // Kolom untuk Foto
             $colLetterFoto = $this->getColumnLetter($targetColIndexFoto);
-            $rangeFoto = "'{$sheetName}'!{$colLetterFoto}{$targetRow}";
+            $colLetterTanggal = $this->getColumnLetter($targetColIndexTanggal);
 
-            // Generate URL Gambar dan Formula IMAGE
             $urlFoto = asset('storage/' . $absensi->bukti_file);
-            $formulaFoto = '=IMAGE("' . $urlFoto . '")';
 
-            // Kolom untuk Tanggal (Geser 1 kolom ke kanan dari kolom Foto)
-            $colLetterTanggal = $this->getColumnLetter($targetColIndexFoto + 1);
-            $rangeTanggal = "'{$sheetName}'!{$colLetterTanggal}{$targetRow}";
-
-            $valueRangeFoto = new ValueRange();
-            $valueRangeFoto->setRange($rangeFoto);
-            $valueRangeFoto->setValues([[$formulaFoto]]);
-
-            $valueRangeTanggal = new ValueRange();
-            $valueRangeTanggal->setRange($rangeTanggal);
-            $valueRangeTanggal->setValues([[$tanggalApelTeks]]);
-
-            $data = [$valueRangeFoto, $valueRangeTanggal];
+            $dataToUpdate = [
+                new ValueRange([
+                    'range' => "'{$sheetName}'!{$colLetterFoto}{$targetRow}",
+                    'values' => [['=IMAGE("' . $urlFoto . '")']]
+                ]),
+                new ValueRange([
+                    'range' => "'{$sheetName}'!{$colLetterTanggal}{$targetRow}",
+                    'values' => [[$tanggalApelTeks]]
+                ])
+            ];
 
             $body = new \Google\Service\Sheets\BatchUpdateValuesRequest();
             $body->setValueInputOption('USER_ENTERED');
-            $body->setData($data);
-
-            // Tembak Data ke Sheets secara bersamaan (Foto & Tanggal)
+            $body->setData($dataToUpdate);
             $service->spreadsheets_values->batchUpdate($spreadsheetId, $body);
-
         } else {
-            throw new \Exception("Koordinat sel tidak ditemukan. (Baris Nama '{$klienName}': " . ($targetRow !== -1 ? 'Ketemu' : 'GAGAL') . " | Kolom Bulan '{$bulanTarget}': " . ($targetColIndexFoto !== -1 ? 'Ketemu' : 'GAGAL') . ")");
+            throw new \Exception("Gagal: Nama baris ditemukan? " . ($targetRow !== -1 ? 'YA' : 'TIDAK') . ". Kolom 'Foto' di bulan '{$bulanTarget}' ditemukan? " . ($targetColIndexFoto !== -1 ? 'YA' : 'TIDAK'));
         }
     }
 
-    // Helper Function
     private function getColumnLetter(int $num)
     {
         $numeric = $num % 26;
@@ -300,15 +264,15 @@ class AbsensiController extends Controller
 
 
     // ==========================================
-    // BAGIAN 3: FITUR PK / PENGAWAS
-    // ==========================================
+    // BAGIAN 2: FITUR PK/PENGAWAS
     public function indexPengawas(Request $request)
     {
+        // BAGIAN GOOGLE SHEETS API LOGIC (KATEGORI LITMAS)
         $userId = Auth::id();
         $user = Auth::user();
         $userName = $user->nama;
 
-        // --- GOOGLE SHEETS SINKRONISASI LITMAS ---
+        // TETAP SATU ID SPREADSHEET(KATEGORI LITMAS)
         $spreadsheetId = '1yHJCmGakpsyLx16FmWeNIyKp6EzA9Y8VS3aI_D3eTEg';
         $gid = '385067762';
         $url = "https://docs.google.com/spreadsheets/d/{$spreadsheetId}/export?format=csv&gid={$gid}";
@@ -338,14 +302,11 @@ class AbsensiController extends Controller
             }
         } catch (\Exception $e) { }
 
-        // --- AMBIL DATA KLIEN & HITUNG SKOR PENGAWASAN OTOMATIS ---
         $daftarKlienSaya = User::where('role', 'narapidana')->where('pembimbing_id', $userId)->orderBy('nama', 'asc')->get();
 
-        // PERBAIKAN: Ambil bulan/tahun dari request atau gunakan bulan berjalan
         $bulanFilter = $request->input('month', date('m'));
         $tahunFilter = $request->input('year', date('Y'));
 
-        // Hitung jumlah klien yang sudah absen di bulan tersebut
         $jumlahKlienAbsen = AbsensiKegiatan::where('pengawas_id', $userId)
             ->whereMonth('tanggal_waktu', $bulanFilter)
             ->whereYear('tanggal_waktu', $tahunFilter)
@@ -357,7 +318,6 @@ class AbsensiController extends Controller
             'berhasil' => $jumlahKlienAbsen
         ];
 
-        // --- FILTER ABSENSI ---
         $query = AbsensiKegiatan::with('narapidana')->where('pengawas_id', $userId);
         $availableYears = AbsensiKegiatan::where('pengawas_id', $userId)
             ->selectRaw('YEAR(tanggal_waktu) as year')

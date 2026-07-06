@@ -178,7 +178,7 @@ class AdminController extends Controller
         return redirect()->route('admin.narapidana.index')->with('success', "Akun Klien/Narapidana atas nama {$request->nama} berhasil ditambahkan secara manual.");
     }
 
-    // TAMBAHAN: FUNGSI IMPORT KLIEN/NARAPIDANA
+    // FUNGSI IMPORT KLIEN/NARAPIDANA
     public function importNarapidana(Request $request) {
         $request->validate(['file_excel' => ['required', 'file', 'mimes:csv,xlsx,xls,txt', 'max:8192']]);
         try {
@@ -299,7 +299,7 @@ class AdminController extends Controller
     }
 
     // ==========================================
-    // MENU BARU: REKAP DATA & PEMETAAN
+    // MENU REKAP DATA & PEMETAAN
     // ==========================================
     public function rekapIndex(Request $request)
     {
@@ -330,7 +330,6 @@ class AdminController extends Controller
 
         $pk = User::where('role', 'pengawas')->findOrFail($request->pk_id);
 
-        // Update pembimbing_id pada klien-klien yang dipilih
         User::whereIn('id', $request->klien_ids)->update(['pembimbing_id' => $pk->id]);
 
         return redirect()->back()->with('success', count($request->klien_ids) . " Klien berhasil dihubungkan di bawah pengawasan PK: {$pk->nama}.");
