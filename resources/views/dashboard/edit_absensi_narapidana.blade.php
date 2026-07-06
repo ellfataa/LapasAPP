@@ -64,7 +64,7 @@
                                         @endif
                                     </div>
                                 </div>
-                                <p class="mt-2 text-xs text-slate-500 italic">*Jika Anda memperbarui foto/tanggal, sistem akan otomatis melakukan sinkronisasi ulang ke Google Sheets milik PK/Pengawas ini.</p>
+                                <p class="mt-2 text-xs text-red-500 italic">*Jika Anda memperbarui foto/tanggal, sistem akan otomatis melakukan sinkronisasi ulang ke Spreadsheet milik PK/Pengawas ini.</p>
                             </div>
                         </div>
 

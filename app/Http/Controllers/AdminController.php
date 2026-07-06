@@ -17,31 +17,50 @@ class AdminController extends Controller
         $totalPengawas = User::where('role', 'pengawas')->count();
         $totalNarapidana = User::where('role', 'narapidana')->count();
         $totalAbsensi = AbsensiKegiatan::count();
+        $totalKinerja = KinerjaPk::count();
 
-        $ringkasanPengawas = User::where('role', 'pengawas')->orderBy('created_at', 'desc')->take(5)->get();
-        $ringkasanNarapidana = User::where('role', 'narapidana')->orderBy('created_at', 'desc')->take(5)->get();
-        $ringkasanKinerja = KinerjaPk::with('pengawas')->orderBy('tahun', 'desc')->orderBy('bulan', 'desc')->take(5)->get();
-        $ringkasanAbsensi = AbsensiKegiatan::with(['narapidana', 'pengawas'])->orderBy('tanggal_waktu', 'desc')->take(5)->get();
-
+        // Variabel Default (Bulan & Tahun Saat Ini)
         $currentSystemYear = date('Y');
-        $availableYears = AbsensiKegiatan::selectRaw('YEAR(tanggal_waktu) as year')
-            ->distinct()->orderBy('year', 'desc')->pluck('year')->toArray();
+        $currentSystemMonth = date('m');
 
-        if (!in_array($currentSystemYear, $availableYears)) {
-            $availableYears[] = $currentSystemYear;
-            rsort($availableYears);
-        }
+        // Tangkap Parameter Filter Kinerja (atau gunakan default)
+        $kinerjaYear = $request->input('kinerja_year', $currentSystemYear);
+        $kinerjaMonth = $request->input('kinerja_month', $currentSystemMonth);
 
-        $selectedYear = $request->input('year', $currentSystemYear);
+        // Tangkap Parameter Filter Absensi (atau gunakan default)
+        $absensiYear = $request->input('absensi_year', $currentSystemYear);
+        $absensiMonth = $request->input('absensi_month', $currentSystemMonth);
 
-        $absensiKalender = AbsensiKegiatan::with('narapidana')
-            ->whereYear('tanggal_waktu', $selectedYear)
+        // Ambil Daftar Tahun yang Tersedia untuk Dropdown
+        $availableYearsAbsensi = AbsensiKegiatan::selectRaw('YEAR(tanggal_waktu) as year')
+            ->distinct()->pluck('year')->toArray();
+
+        $availableYearsKinerja = KinerjaPk::select('tahun as year')
+            ->distinct()->pluck('year')->toArray();
+
+        $availableYears = array_unique(array_merge($availableYearsAbsensi, $availableYearsKinerja, [$currentSystemYear]));
+        rsort($availableYears);
+
+        // 1. Ambil 5 Laporan Kinerja PK Terbaru (Berdasarkan Filter Kinerja)
+        $ringkasanKinerja = KinerjaPk::with('pengawas')
+            ->where('tahun', $kinerjaYear)
+            ->where('bulan', (int)$kinerjaMonth)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
+        // 2. Ambil 5 Laporan Absensi Terbaru (Berdasarkan Filter Absensi)
+        $ringkasanAbsensi = AbsensiKegiatan::with(['narapidana', 'pengawas'])
+            ->whereYear('tanggal_waktu', $absensiYear)
+            ->whereMonth('tanggal_waktu', $absensiMonth)
+            ->orderBy('tanggal_waktu', 'desc')
+            ->take(5)
             ->get();
 
         return view('dashboard.admin', compact(
-            'totalPengawas', 'totalNarapidana', 'totalAbsensi',
-            'ringkasanPengawas', 'ringkasanNarapidana', 'ringkasanKinerja', 'ringkasanAbsensi',
-            'availableYears', 'selectedYear', 'absensiKalender'
+            'totalPengawas', 'totalNarapidana', 'totalAbsensi', 'totalKinerja',
+            'ringkasanKinerja', 'ringkasanAbsensi',
+            'availableYears', 'kinerjaYear', 'kinerjaMonth', 'absensiYear', 'absensiMonth'
         ));
     }
 
@@ -178,7 +197,6 @@ class AdminController extends Controller
         return redirect()->route('admin.narapidana.index')->with('success', "Akun Klien/Narapidana atas nama {$request->nama} berhasil ditambahkan secara manual.");
     }
 
-    // FUNGSI IMPORT KLIEN/NARAPIDANA
     public function importNarapidana(Request $request) {
         $request->validate(['file_excel' => ['required', 'file', 'mimes:csv,xlsx,xls,txt', 'max:8192']]);
         try {
@@ -189,20 +207,18 @@ class AdminController extends Controller
 
             $berhasilTambah = 0; $berhasilUpdate = 0;
 
-            // Array Romawi untuk konversi bulan
             $romawi = [1=>'I',2=>'II',3=>'III',4=>'IV',5=>'V',6=>'VI',7=>'VII',8=>'VIII',9=>'IX',10=>'X',11=>'XI',12=>'XII'];
             $bulanRomawi = $romawi[date('n')];
             $tahun = date('Y');
 
             for ($i = 1; $i < count($rows); $i++) {
-                $nama = trim($rows[$i][0] ?? ''); // Kolom A: Nama Klien
-                $nikExcel = trim($rows[$i][1] ?? ''); // Kolom B: No Registrasi
+                $nama = trim($rows[$i][0] ?? '');
+                $nikExcel = trim($rows[$i][1] ?? '');
 
                 if (!empty($nama)) {
                     $existingUser = User::where('role', 'narapidana')->whereRaw('LOWER(nama) = ?', strtolower($nama))->first();
 
                     if ($existingUser) {
-                        // Jika nama sudah ada, update Nomor Registrasinya saja
                         if (!empty($nikExcel) && $existingUser->nomor_induk !== $nikExcel) {
                             if (!User::where('nomor_induk', $nikExcel)->where('id', '!=', $existingUser->id)->exists()) {
                                 $existingUser->update(['nomor_induk' => $nikExcel]);
@@ -210,8 +226,6 @@ class AdminController extends Controller
                             }
                         }
                     } else {
-                        // Jika belum ada, buat Klien baru
-                        // Generate No Reg: "123/PB/VI/2026"
                         $nomorAcak = rand(100, 999);
                         $finalNik = !empty($nikExcel) ? $nikExcel : ("{$nomorAcak}/PB/{$bulanRomawi}/{$tahun}");
 
@@ -256,7 +270,6 @@ class AdminController extends Controller
         if ($request->filled('password')) { $user->password = Hash::make($request->password); }
         $user->save();
 
-        // Kembalikan ke halaman index masing-masing
         $route = $user->role === 'pengawas' ? 'admin.pengawas.index' : 'admin.narapidana.index';
         return redirect()->route($route)->with('success', "Data akun atas nama {$user->nama} berhasil diperbarui.");
     }
@@ -266,7 +279,6 @@ class AdminController extends Controller
         $user = User::findOrFail($id);
         $namaUser = $user->nama;
 
-        // Pembersihan PK
         if ($user->role === 'pengawas') {
             $kinerjas = KinerjaPk::where('pengawas_id', $id)->get();
             foreach ($kinerjas as $kinerja) {
@@ -283,7 +295,6 @@ class AdminController extends Controller
             }
         }
 
-        // Pembersihan Klien
         if ($user->role === 'narapidana') {
             $absensis = AbsensiKegiatan::where('narapidana_id', $id)->get();
             foreach ($absensis as $absensi) {
@@ -303,7 +314,6 @@ class AdminController extends Controller
     // ==========================================
     public function rekapIndex(Request $request)
     {
-        // 1. Ambil daftar PK beserta jumlah klien yang sudah di-assign ke mereka
         $queryPk = User::where('role', 'pengawas')->withCount('klienBimbingan');
 
         if ($request->filled('search_pk')) {
@@ -311,10 +321,7 @@ class AdminController extends Controller
         }
         $daftarPk = $queryPk->orderBy('nama', 'asc')->paginate(15, ['*'], 'pk_page');
 
-        // 2. Ambil seluruh data PK dan Klien untuk keperluan Dropdown Hubungkan
         $semuaPk = User::where('role', 'pengawas')->orderBy('nama', 'asc')->get();
-
-        // Ambil daftar klien (bisa difilter untuk yang belum punya PK, tapi kita ambil semua saja agar bisa dipindah-pindah)
         $semuaKlien = User::where('role', 'narapidana')->orderBy('nama', 'asc')->get();
 
         return view('admin.rekap.index', compact('daftarPk', 'semuaPk', 'semuaKlien'));
@@ -324,12 +331,11 @@ class AdminController extends Controller
     {
         $request->validate([
             'pk_id' => 'required|exists:users,id',
-            'klien_ids' => 'required|array', // Harus array karena bisa pilih banyak klien sekaligus
+            'klien_ids' => 'required|array',
             'klien_ids.*' => 'exists:users,id'
         ]);
 
         $pk = User::where('role', 'pengawas')->findOrFail($request->pk_id);
-
         User::whereIn('id', $request->klien_ids)->update(['pembimbing_id' => $pk->id]);
 
         return redirect()->back()->with('success', count($request->klien_ids) . " Klien berhasil dihubungkan di bawah pengawasan PK: {$pk->nama}.");
@@ -339,7 +345,6 @@ class AdminController extends Controller
     {
         $klien = User::where('role', 'narapidana')->findOrFail($klien_id);
         $klien->update(['pembimbing_id' => null]);
-
         return redirect()->back()->with('success', "Klien {$klien->nama} berhasil dilepas dari pengawasan PK-nya.");
     }
 

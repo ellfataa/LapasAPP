@@ -41,7 +41,7 @@
                     </svg>
                 </span>
 
-                <x-text-input id="update_password_password" name="password" type="password" class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white py-3 pl-12 pr-4 text-base text-slate-900 shadow-sm transition hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700" autocomplete="new-password" />
+                <x-text-input id="update_password_password" name="password" type="password" placeholder="Minimal 8 karakter" class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white py-3 pl-12 pr-4 text-base text-slate-900 shadow-sm transition hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700" autocomplete="new-password" />
             </div>
             <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-2" />
         </div>
@@ -55,7 +55,7 @@
                     </svg>
                 </span>
 
-                <x-text-input id="update_password_password_confirmation" name="password_confirmation" type="password" class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white py-3 pl-12 pr-4 text-base text-slate-900 shadow-sm transition hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700" autocomplete="new-password" />
+                <x-text-input id="update_password_password_confirmation" name="password_confirmation" type="password" placeholder="Minimal 8 karakter" class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white py-3 pl-12 pr-4 text-base text-slate-900 shadow-sm transition hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700" autocomplete="new-password" />
             </div>
             <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-2" />
         </div>

@@ -40,7 +40,7 @@
         </a>
 
         <div class="pt-5 pb-2">
-            <p class="px-4 text-xs font-bold text-blue-300/80 uppercase tracking-widest">Data & Laporan</p>
+            <p class="px-4 text-xs font-bold text-blue-300/80 uppercase tracking-widest">Laporan</p>
         </div>
 
         <a href="{{ route('admin.kinerja.index') }}" class="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.kinerja.*') ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-900/50' : 'hover:bg-white/10 hover:text-white font-medium' }}">

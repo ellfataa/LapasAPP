@@ -54,7 +54,7 @@
                                 </div>
 
                                 <div>
-                                    <label for="jenis_kegiatan" class="mb-2 block text-sm font-bold text-slate-800 sm:text-base">Nama Kegiatan</label>
+                                    <label for="jenis_kegiatan" class="mb-2 block text-sm font-bold text-slate-800 sm:text-base">Nama Kegiatan Sosial</label>
                                     <input id="jenis_kegiatan" name="jenis_kegiatan" type="text" class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm transition placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700" required placeholder="Contoh: Membersihkan selokan" value="{{ old('jenis_kegiatan') }}" />
                                 </div>
 
@@ -206,7 +206,7 @@
                         <thead class="border-b border-slate-200 bg-slate-100">
                             <tr>
                                 <th scope="col" class="w-40 px-6 py-4 text-sm font-bold uppercase tracking-wide text-slate-700">Tanggal</th>
-                                <th scope="col" class="px-6 py-4 text-sm font-bold uppercase tracking-wide text-slate-700">Nama Kegiatan</th>
+                                <th scope="col" class="px-6 py-4 text-sm font-bold uppercase tracking-wide text-slate-700">Nama Kegiatan Sosial</th>
                                 <th scope="col" class="w-56 px-6 py-4 text-sm font-bold uppercase tracking-wide text-slate-700">PK/Pengawas</th>
                                 <th scope="col" class="w-36 px-6 py-4 text-center text-sm font-bold uppercase tracking-wide text-slate-700">Bukti Foto</th>
                                 <th scope="col" class="w-36 px-6 py-4 text-center text-sm font-bold uppercase tracking-wide text-slate-700">Pengaturan</th>

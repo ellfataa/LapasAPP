@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\KinerjaPk;
+use App\Models\User;
+use App\Models\AbsensiKegiatan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 
 class KinerjaPkController extends Controller
 {
@@ -13,55 +14,49 @@ class KinerjaPkController extends Controller
     {
         $userId = Auth::id();
 
-        // 1. Cek Data Existing
-        $existingData = KinerjaPk::where('pengawas_id', $userId)
-            ->where('bulan', $request->bulan)
-            ->where('tahun', $request->tahun)
-            ->first();
+        // 1. Kunci Periode ke Bulan & Tahun Berjalan Secara Real-Time
+        $bulanSekarang = date('m');
+        $tahunSekarang = date('Y');
 
-        // 2. Susun Aturan Validasi
-        $rules = [
-            'bulan' => ['required', 'integer', 'min:1', 'max:12'],
-            'tahun' => ['required', 'integer'],
-            'pembimbingan_klien' => ['nullable', 'array'],
-            'pengawasan_kuota' => ['required', 'numeric', 'min:0'],
-            'pengawasan_berhasil' => ['required', 'numeric', 'min:0'],
-        ];
+        // 2. Validasi Strict: 1 Kali Submit Per Bulan
+        $sudahSubmit = KinerjaPk::where('pengawas_id', $userId)
+            ->where('bulan', $bulanSekarang)
+            ->where('tahun', $tahunSekarang)
+            ->exists();
 
-        // Hanya Pengawasan yang membutuhkan File & Link
-        $kategoriList = ['pengawasan'];
-
-        foreach ($kategoriList as $kategori) {
-            if (!$existingData || empty(json_decode($existingData->{"{$kategori}_file"}, true))) {
-                $rules["{$kategori}_file"] = ['required', 'array'];
-            } else {
-                $rules["{$kategori}_file"] = ['nullable', 'array'];
-            }
-            $rules["{$kategori}_file.*"] = ['file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'];
-            $rules["{$kategori}_link"] = ['nullable', 'url', 'max:255'];
+        if ($sudahSubmit) {
+            return redirect()->back()->withErrors(['kinerja' => 'Anda sudah mengirimkan formulir penilaian kinerja untuk bulan ini. Laporan kinerja hanya dapat dilakukan 1 kali per bulan.']);
         }
 
-        $request->validate($rules, [
-            'required' => 'Kolom Kuota/Status, Berhasil, dan File Bukti wajib diisi.',
-            'numeric' => 'Kolom harus berupa angka.',
-            'mimes' => 'Format file bukti harus berupa JPG, JPEG, PNG, atau PDF.',
+        // 3. Validasi Input Dasar
+        $request->validate([
+            'litmas_kuota' => ['required', 'numeric', 'min:0'],
+            'litmas_berhasil' => ['required', 'numeric', 'min:0'],
+            'pembimbingan_klien' => ['nullable', 'array'],
+        ], [
+            'required' => 'Data target dan keberhasilan wajib diisi.'
         ]);
 
-        $dataToSave = [];
+        $dataToSave = [
+            'pengawas_id' => $userId,
+            'bulan'       => $bulanSekarang,
+            'tahun'       => $tahunSekarang,
+        ];
+
         $totalPersen = 0;
 
-        // --- 1. KALKULASI LITMAS ---
+        // --- A. KALKULASI LITMAS ---
         $litmasKuota = $request->input('litmas_kuota', 0);
         $litmasBerhasil = $request->input('litmas_berhasil', 0);
         $dataToSave['litmas_kuota'] = $litmasKuota;
         $dataToSave['litmas_berhasil'] = $litmasBerhasil;
-        $dataToSave['litmas_file'] = null;
-        $dataToSave['litmas_link'] = null;
+        $dataToSave['litmas_file'] = null; // Dikosongkan
+        $dataToSave['litmas_link'] = null; // Dikosongkan
 
         $litmasPersen = ($litmasKuota > 0) ? ($litmasBerhasil / $litmasKuota) * 100 : 0;
         $totalPersen += $litmasPersen;
 
-        // --- 2. KALKULASI PEMBIMBINGAN ---
+        // --- B. KALKULASI PEMBIMBINGAN ---
         $klienData = $request->input('pembimbingan_klien', []);
         $totalKlien = count($klienData);
         $jumlahBekerja = 0;
@@ -80,54 +75,31 @@ class KinerjaPkController extends Controller
         $dataToSave['pembimbingan_kuota'] = $totalKlien;
         $dataToSave['pembimbingan_berhasil'] = $jumlahBekerja;
         $dataToSave['pembimbingan_detail'] = json_encode($detailKlien);
-
-        // Set null untuk file dan link pembimbingan karena sudah dihapus dari form
-        $dataToSave['pembimbingan_file'] = null;
-        $dataToSave['pembimbingan_link'] = null;
+        $dataToSave['pembimbingan_file'] = null; // Dikosongkan
+        $dataToSave['pembimbingan_link'] = null; // Dikosongkan
 
         $pembimbinganPersen = ($totalKlien > 0) ? ($jumlahBekerja / $totalKlien) * 100 : 0;
         $totalPersen += $pembimbinganPersen;
 
-        // --- 3. KALKULASI PENGAWASAN ---
-        $pengawasKuota = $request->input('pengawasan_kuota', 0);
-        $pengawasBerhasil = $request->input('pengawasan_berhasil', 0);
-        $dataToSave['pengawasan_kuota'] = $pengawasKuota;
-        $dataToSave['pengawasan_berhasil'] = $pengawasBerhasil;
-        $dataToSave['pengawasan_link'] = $request->input('pengawasan_link');
+        // --- C. KALKULASI PENGAWASAN (OTOMATIS SERVER-SIDE) ---
+        // Mengambil data murni dari database agar tidak bisa diakali via Inspect Element
+        $jumlahKlienDiampu = User::where('role', 'narapidana')->where('pembimbing_id', $userId)->count();
+        $jumlahKlienAbsen = AbsensiKegiatan::where('pengawas_id', $userId)
+            ->whereMonth('tanggal_waktu', $bulanSekarang)
+            ->whereYear('tanggal_waktu', $tahunSekarang)
+            ->distinct('narapidana_id')
+            ->count('narapidana_id');
 
-        $pengawasanPersen = ($pengawasKuota > 0) ? ($pengawasBerhasil / $pengawasKuota) * 100 : 0;
+        $dataToSave['pengawasan_kuota'] = $jumlahKlienDiampu;
+        $dataToSave['pengawasan_berhasil'] = $jumlahKlienAbsen;
+        $dataToSave['pengawasan_file'] = null; // Dikosongkan
+        $dataToSave['pengawasan_link'] = null; // Dikosongkan
+
+        $pengawasanPersen = ($jumlahKlienDiampu > 0) ? ($jumlahKlienAbsen / $jumlahKlienDiampu) * 100 : 0;
         $totalPersen += $pengawasanPersen;
 
-        // --- PROSES UPLOAD FILE BUKTI (Hanya untuk Pengawasan) ---
-        foreach ($kategoriList as $kategori) {
-            if ($request->hasFile("{$kategori}_file")) {
-                $files = $request->file("{$kategori}_file");
-                $fileData = [];
 
-                if ($existingData && $existingData->{"{$kategori}_file"}) {
-                    $oldFiles = json_decode($existingData->{"{$kategori}_file"}, true);
-                    if (is_array($oldFiles)) {
-                        foreach ($oldFiles as $oldFile) {
-                            $oldPath = is_array($oldFile) ? ($oldFile['path'] ?? '') : $oldFile;
-                            if ($oldPath && Storage::disk('public')->exists($oldPath)) {
-                                Storage::disk('public')->delete($oldPath);
-                            }
-                        }
-                    }
-                }
-
-                foreach ($files as $file) {
-                    $path = $file->store('bukti_kinerja_pk', 'public');
-                    $fileData[] = [
-                        'name' => $file->getClientOriginalName(),
-                        'path' => $path
-                    ];
-                }
-                $dataToSave["{$kategori}_file"] = json_encode($fileData);
-            }
-        }
-
-        // --- HITUNG RATA-RATA AKHIR ---
+        // --- D. HITUNG RATA-RATA AKHIR & PREDIKAT ---
         $dataToSave['rata_rata'] = round($totalPersen / 3, 1);
 
         if ($dataToSave['rata_rata'] >= 91) {
@@ -142,17 +114,15 @@ class KinerjaPkController extends Controller
             $dataToSave['predikat'] = 'Sangat Kurang';
         }
 
-        KinerjaPk::updateOrCreate(
-            ['pengawas_id' => $userId, 'bulan' => $request->bulan, 'tahun' => $request->tahun],
-            $dataToSave
-        );
+        // 4. Simpan ke Database
+        KinerjaPk::create($dataToSave);
 
-        // Hapus draf dari database karena form sudah berhasil disubmit
-        \App\Models\User::where('id', $userId)->update(['kinerja_draft' => null]);
+        // 5. Bersihkan Draft Auto-Save
+        User::where('id', $userId)->update(['kinerja_draft' => null]);
 
-        $namaBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-        $bulanNama = $namaBulan[$request->bulan - 1] ?? $request->bulan;
+        $namaBulanIndo = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        $bulanTeks = $namaBulanIndo[(int)$bulanSekarang - 1];
 
-        return redirect()->back()->with('success', 'Kinerja bulan ' . $bulanNama . ' ' . $request->tahun . ' berhasil disimpan. Predikat: ' . $dataToSave['predikat']);
+        return redirect()->back()->with('success', "Kinerja bulan {$bulanTeks} {$tahunSekarang} berhasil disimpan secara permanen. Predikat Anda: " . $dataToSave['predikat']);
     }
 }

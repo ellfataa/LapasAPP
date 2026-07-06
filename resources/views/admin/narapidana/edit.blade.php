@@ -47,7 +47,7 @@
                     <div class="pt-6 mt-2 border-t border-slate-200">
                         <label class="text-sm font-bold text-slate-800 mb-2 flex items-center justify-between">
                             Ubah Password Akun Klien
-                            <span class="text-[11px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Berbahaya</span>
+                            <span class="text-[11px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Aksi Berbahaya</span>
                         </label>
                         <input type="password" name="password" placeholder="Isi minimal 8 karakter hanya jika klien lupa password" class="block min-h-[48px] w-full rounded-xl border-slate-300 px-4 text-sm text-slate-900 shadow-sm transition focus:border-amber-500 focus:ring-amber-500">
                     </div>

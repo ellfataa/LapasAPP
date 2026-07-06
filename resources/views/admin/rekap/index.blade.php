@@ -20,11 +20,6 @@
                 </div>
             </div>
 
-            <div class="md:hidden bg-white border-b border-slate-200 px-4 py-3 flex items-center shadow-sm rounded-xl mb-6">
-                <button @click="sidebarOpen = true" class="text-slate-600 hover:text-indigo-700 focus:outline-none"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg></button>
-                <span class="ml-4 font-bold text-slate-800 text-lg">Menu Admin</span>
-            </div>
-
             <!-- BAGIAN 1: TABEL REKAPAN PK -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col mb-8">
                 <div class="border-b border-slate-200 bg-slate-50 px-6 py-4 flex items-center justify-between">
@@ -70,61 +65,153 @@
                 @endif
             </div>
 
+            <!-- PREPARASI DATA JSON UNTUK JAVASCRIPT -->
+            @php
+                $klienJson = $semuaKlien->map(function($k) {
+                    return [
+                        'id' => (string)$k->id,
+                        'nama' => $k->nama,
+                        'has_pk' => !empty($k->pembimbing_id),
+                        'pk_nama' => $k->pembimbing_id ? ($k->pembimbing->nama ?? 'PK Lain') : ''
+                    ];
+                })->values()->toJson();
+            @endphp
+
             <!-- BAGIAN 2: FORM HUBUNGKAN PK DENGAN KLIEN -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">
-                <div class="border-b border-slate-200 bg-indigo-900 px-6 py-5 flex items-center gap-3">
-                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white ring-1 ring-inset ring-white/20">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"></path></svg>
+                <div class="border-b border-slate-200 bg-indigo-900 px-6 py-5 flex flex-col sm:flex-row sm:items-center gap-4">
+                    <span class="hidden sm:flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white ring-1 ring-inset ring-white/20">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"></path></svg>
                     </span>
                     <div>
-                        <h3 class="font-bold text-lg text-white">Hubungkan Klien dengan PK/Pengawas</h3>
-                        <p class="text-indigo-200 text-xs mt-0.5">Pilih satu PK, lalu pilih banyak Klien sekaligus untuk didistribusikan.</p>
+                        <h3 class="font-bold text-lg sm:text-xl text-white">Hubungkan Klien dengan PK/Pengawas</h3>
+                        <p class="text-indigo-200 text-sm mt-1">Pilih PK pembimbing di kotak 1, lalu centang klien di kotak 2.</p>
                     </div>
                 </div>
 
-                <form action="{{ route('admin.rekap.hubungkan') }}" method="POST" class="p-6 sm:p-8">
+                <form action="{{ route('admin.rekap.hubungkan') }}" method="POST" class="p-5 sm:p-8">
                     @csrf
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-                        <!-- Pilihan PK -->
-                        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
-                            <label class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
-                                <span class="bg-indigo-200 text-indigo-800 w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span>
-                                Pilih PK/Pengawas
+                        <!-- KOTAK 1: Pilihan PK -->
+                        <div class="bg-slate-50 p-5 sm:p-6 rounded-2xl border border-slate-200 h-fit">
+                            <label class="text-base font-extrabold text-slate-800 mb-4 flex items-center gap-3">
+                                <span class="bg-indigo-600 text-white w-7 h-7 rounded-full flex items-center justify-center text-xs shadow-sm">1</span>
+                                Tentukan PK/Pengawas
                             </label>
-                            <select name="pk_id" required class="block w-full rounded-xl border-slate-300 bg-white py-3 px-4 text-sm text-slate-900 shadow-sm transition hover:border-indigo-400 focus:border-indigo-600 focus:ring-indigo-600 cursor-pointer">
-                                <option value="" disabled selected>-- Klik untuk memilih 1 PK Pembimbing --</option>
+
+                            <p class="text-sm text-slate-600 mb-4">Pilih PK yang akan menjadi pengawas untuk klien-klien yang akan Anda centang nanti.</p>
+
+                            <select name="pk_id" required class="block w-full rounded-xl border-slate-300 bg-white py-3.5 px-4 text-base font-bold text-indigo-900 shadow-sm transition hover:border-indigo-400 focus:border-indigo-600 focus:ring-indigo-600 cursor-pointer">
+                                <option value="" disabled selected>-- Klik di sini untuk memilih PK --</option>
                                 @foreach($semuaPk as $pembimbing)
                                     <option value="{{ $pembimbing->id }}">{{ $pembimbing->nama }} (NIP: {{ $pembimbing->nomor_induk }})</option>
                                 @endforeach
                             </select>
-                            <p class="text-xs text-slate-500 mt-3 italic">*PK yang dipilih akan menjadi pembimbing bagi klien-klien di sebelah kanan.</p>
                         </div>
 
-                        <!-- Pilihan Klien (Multiple) -->
-                        <div class="bg-emerald-50 p-5 rounded-2xl border border-emerald-200">
-                            <label class="text-sm font-bold text-emerald-900 mb-3 flex items-center gap-2">
-                                <span class="bg-emerald-200 text-emerald-800 w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span>
-                                Pilih Klien/Narapidana (Bisa lebih dari satu)
-                            </label>
+                        <!-- KOTAK 2: Pilihan Klien (Dengan Alpine JS Pagination) -->
+                        <div x-data="{
+                                search: '',
+                                selected: [],
+                                clients: {{ $klienJson }},
+                                currentPage: 1,
+                                itemsPerPage: 20,
 
-                            <!-- Bantuan Instruksi Windows/Mac -->
-                            <p class="text-[11px] text-yellow-700 font-semibold mb-2 bg-yellow-100 p-2 rounded-lg">
-                                Tips: Tahan tombol <kbd class="bg-white border px-1 rounded shadow-sm">Ctrl</kbd> (Windows) atau <kbd class="bg-white border px-1 rounded shadow-sm">Cmd ⌘</kbd> (Apple MacBook) sambil mengklik nama klien untuk memilih banyak sekaligus.
-                            </p>
+                                get filteredClients() {
+                                    if (this.search.trim() === '') return this.clients;
+                                    const q = this.search.toLowerCase();
+                                    return this.clients.filter(c => c.nama.toLowerCase().includes(q));
+                                },
+                                get totalPages() {
+                                    return Math.max(1, Math.ceil(this.filteredClients.length / this.itemsPerPage));
+                                },
+                                get paginatedClients() {
+                                    const start = (this.currentPage - 1) * this.itemsPerPage;
+                                    return this.filteredClients.slice(start, start + this.itemsPerPage);
+                                }
+                            }"
+                            x-init="$watch('search', () => currentPage = 1)"
+                            class="bg-emerald-50 p-5 sm:p-6 rounded-2xl border border-emerald-200 flex flex-col h-[700px]">
 
-                            <select name="klien_ids[]" multiple required size="8" class="block w-full rounded-xl border-emerald-300 bg-white py-2 px-3 text-sm text-slate-900 shadow-sm transition focus:border-emerald-600 focus:ring-emerald-600 custom-scrollbar outline-none">
-                                @foreach($semuaKlien as $klien)
-                                    <option value="{{ $klien->id }}" class="py-2 px-3 rounded-lg mb-1 border border-transparent hover:bg-emerald-50 focus:bg-emerald-100 cursor-pointer">
-                                        {{ $klien->nama }}
-                                        @if($klien->pembimbing_id)
-                                            (Saat ini di bawah: {{ $klien->pembimbing->nama ?? 'PK Lain' }})
-                                        @else
-                                            (Belum ada PK)
-                                        @endif
-                                    </option>
-                                @endforeach
-                            </select>
+                            <!-- Input Hidden (Menjaga data centang tetap terkirim meski pindah halaman) -->
+                            <template x-for="id in selected" :key="'hidden-'+id">
+                                <input type="hidden" name="klien_ids[]" :value="id">
+                            </template>
+
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                                <label class="text-base font-extrabold text-emerald-900 flex items-center gap-3">
+                                    <span class="bg-emerald-600 text-white w-7 h-7 rounded-full flex items-center justify-center text-xs shadow-sm">2</span>
+                                    Centang Klien
+                                </label>
+                                <div class="bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm whitespace-nowrap">
+                                    <span x-text="selected.length"></span> Terpilih
+                                </div>
+                            </div>
+
+                            <!-- Input Pencarian -->
+                            <div class="relative mb-4 shrink-0">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                </div>
+                                <input type="text" x-model="search" placeholder="Cari nama klien di sini..." class="block w-full pl-11 pr-4 py-3 border-emerald-300 rounded-xl leading-5 bg-white placeholder-emerald-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm transition shadow-sm font-medium text-emerald-900">
+
+                                <button type="button" x-show="search.length > 0" @click="search = ''" class="absolute inset-y-0 right-0 pr-3 flex items-center text-emerald-400 hover:text-emerald-600 focus:outline-none" style="display: none;">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </button>
+                            </div>
+
+                            <!-- Daftar Klien (Render via Alpine) -->
+                            <div class="flex-1 overflow-y-auto custom-scrollbar bg-white rounded-xl border border-emerald-200 shadow-inner p-2">
+
+                                <template x-for="(klien, index) in paginatedClients" :key="klien.id">
+                                    <label class="flex items-center gap-4 p-3 hover:bg-emerald-50 rounded-lg cursor-pointer transition-colors border-b border-slate-100 last:border-0"
+                                           :class="selected.includes(klien.id) ? 'bg-emerald-100 border-emerald-300 ring-1 ring-emerald-400' : ''">
+
+                                        <!-- Checkbox (Tanpa "name" agar tidak ganda dengan Input Hidden) -->
+                                        <div class="flex items-center h-5 shrink-0">
+                                            <input type="checkbox" :value="klien.id" x-model="selected" class="w-6 h-6 text-emerald-600 border-slate-300 rounded focus:ring-emerald-600 cursor-pointer shadow-sm">
+                                        </div>
+
+                                        <div class="flex flex-col min-w-0">
+                                            <span class="text-sm font-bold text-slate-800 truncate" x-text="( (currentPage - 1) * itemsPerPage + index + 1 ) + '. ' + klien.nama"></span>
+                                            <span class="text-[11px] sm:text-xs mt-0.5 truncate">
+                                                <template x-if="klien.has_pk">
+                                                    <span><span class="text-slate-500 font-medium">Dibimbing oleh: </span><span class="text-indigo-700 font-bold" x-text="klien.pk_nama"></span></span>
+                                                </template>
+                                                <template x-if="!klien.has_pk">
+                                                    <span class="text-amber-600 font-bold bg-amber-100 px-1.5 py-0.5 rounded">Belum Memiliki PK</span>
+                                                </template>
+                                            </span>
+                                        </div>
+                                    </label>
+                                </template>
+
+                                <!-- Pesan Kosong -->
+                                <div x-show="filteredClients.length === 0" class="p-6 text-center text-sm text-slate-500 italic" style="display: none;">
+                                    Data klien tidak ditemukan.
+                                </div>
+                            </div>
+
+                            <!-- Tombol Navigasi Pagination -->
+                            <div class="flex items-center justify-between mt-4 bg-white p-2.5 sm:p-3 rounded-xl border border-emerald-200 shadow-sm shrink-0">
+                                <button type="button" @click="if(currentPage > 1) currentPage--" :disabled="currentPage === 1"
+                                        class="px-3 sm:px-4 py-2 sm:py-2.5 bg-emerald-100 text-emerald-800 text-sm font-bold rounded-lg hover:bg-emerald-200 transition disabled:opacity-40 disabled:cursor-not-allowed">
+                                    &laquo; Previous
+                                </button>
+
+                                <div class="text-center px-2">
+                                    <span class="text-sm font-bold text-slate-700 block">
+                                        Hal. <span x-text="currentPage"></span> / <span x-text="totalPages"></span>
+                                    </span>
+                                    <span class="text-[10px] sm:text-[11px] font-medium text-slate-500 block mt-0.5">Total: <span x-text="filteredClients.length"></span> Klien</span>
+                                </div>
+
+                                <button type="button" @click="if(currentPage < totalPages) currentPage++" :disabled="currentPage === totalPages"
+                                        class="px-3 sm:px-4 py-2 sm:py-2.5 bg-emerald-100 text-emerald-800 text-sm font-bold rounded-lg hover:bg-emerald-200 transition disabled:opacity-40 disabled:cursor-not-allowed">
+                                    Next &raquo;
+                                </button>
+                            </div>
                         </div>
                     </div>
 

@@ -267,12 +267,11 @@ class AbsensiController extends Controller
     // BAGIAN 2: FITUR PK/PENGAWAS
     public function indexPengawas(Request $request)
     {
-        // BAGIAN GOOGLE SHEETS API LOGIC (KATEGORI LITMAS)
         $userId = Auth::id();
         $user = Auth::user();
         $userName = $user->nama;
 
-        // TETAP SATU ID SPREADSHEET(KATEGORI LITMAS)
+        // --- GOOGLE SHEETS SINKRONISASI LITMAS ---
         $spreadsheetId = '1yHJCmGakpsyLx16FmWeNIyKp6EzA9Y8VS3aI_D3eTEg';
         $gid = '385067762';
         $url = "https://docs.google.com/spreadsheets/d/{$spreadsheetId}/export?format=csv&gid={$gid}";
@@ -302,22 +301,25 @@ class AbsensiController extends Controller
             }
         } catch (\Exception $e) { }
 
+
+        // --- AMBIL DATA KLIEN & REKAP PENGAWASAN (SEMUA BULAN) ---
         $daftarKlienSaya = User::where('role', 'narapidana')->where('pembimbing_id', $userId)->orderBy('nama', 'asc')->get();
+        $totalKlienSaatIni = $daftarKlienSaya->count();
 
-        $bulanFilter = $request->input('month', date('m'));
-        $tahunFilter = $request->input('year', date('Y'));
+        $tahunIni = date('Y');
+        $rekapPengawasanTahunan = [];
 
-        $jumlahKlienAbsen = AbsensiKegiatan::where('pengawas_id', $userId)
-            ->whereMonth('tanggal_waktu', $bulanFilter)
-            ->whereYear('tanggal_waktu', $tahunFilter)
-            ->distinct('narapidana_id')
-            ->count('narapidana_id');
+        // Looping untuk mencari jumlah absen klien unik dari bulan 1 sampai 12
+        for ($i = 1; $i <= 12; $i++) {
+            $rekapPengawasanTahunan[$i] = AbsensiKegiatan::where('pengawas_id', $userId)
+                ->whereMonth('tanggal_waktu', $i)
+                ->whereYear('tanggal_waktu', $tahunIni)
+                ->distinct('narapidana_id')
+                ->count('narapidana_id');
+        }
 
-        $dataPengawasanOtomatis = [
-            'kuota' => $daftarKlienSaya->count(),
-            'berhasil' => $jumlahKlienAbsen
-        ];
 
+        // --- FILTER TABEL ABSENSI BAWAH ---
         $query = AbsensiKegiatan::with('narapidana')->where('pengawas_id', $userId);
         $availableYears = AbsensiKegiatan::where('pengawas_id', $userId)
             ->selectRaw('YEAR(tanggal_waktu) as year')
@@ -339,12 +341,14 @@ class AbsensiController extends Controller
         if ($request->filled('year')) { $query->whereYear('tanggal_waktu', $request->year); }
 
         $semuaAbsensi = $query->orderBy('tanggal_waktu', 'desc')->get();
+
+        // Riwayat Kinerja
         $riwayatKinerja = \App\Models\KinerjaPk::where('pengawas_id', $userId)
             ->orderBy('tahun', 'desc')->orderBy('bulan', 'desc')->get();
 
         return view('dashboard.pengawas', compact(
             'semuaAbsensi', 'availableYears', 'riwayatKinerja',
-            'dataLitmasRealtime', 'daftarKlienSaya', 'dataPengawasanOtomatis'
+            'dataLitmasRealtime', 'daftarKlienSaya', 'rekapPengawasanTahunan', 'totalKlienSaatIni'
         ));
     }
 

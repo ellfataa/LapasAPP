@@ -28,7 +28,7 @@
 
                 <div class="flex shrink-0 items-center">
                     <a href="{{ $urlDashboard }}" class="group inline-flex min-h-12 items-center rounded-xl px-2 py-1.5 transition duration-200 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/50">
-                        <img src="{{ asset('images/bapaspwt.png') }}" alt="Logo BAPAS" class="block h-11 w-auto max-w-[170px] object-contain transition duration-200 group-hover:scale-[1.02] sm:h-12 sm:max-w-[210px]">
+                        <img src="{{ asset('images/bapaspwt.webp') }}" alt="Logo BAPAS" class="block h-11 w-auto max-w-[170px] object-contain transition duration-200 group-hover:scale-[1.02] sm:h-12 sm:max-w-[210px]">
                     </a>
                 </div>
 
