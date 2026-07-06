@@ -63,7 +63,7 @@ class AdminController extends Controller
 
     public function pengawasCreate() { return view('admin.pengawas.create'); }
 
-    public function pengawasEdit($id) {
+    public function pengawasEdit(int $id) {
         $pk = User::where('role', 'pengawas')->findOrFail($id);
         return view('admin.pengawas.edit', compact('pk'));
     }
@@ -149,7 +149,7 @@ class AdminController extends Controller
 
     public function narapidanaCreate() { return view('admin.narapidana.create'); }
 
-    public function narapidanaEdit($id) {
+    public function narapidanaEdit(int $id) {
         $napi = User::where('role', 'narapidana')->findOrFail($id);
         return view('admin.narapidana.edit', compact('napi'));
     }
@@ -241,7 +241,7 @@ class AdminController extends Controller
     // ==========================================
     // FUNGSI UMUM UPDATE & DELETE (Berlaku untuk PK & Klien)
     // ==========================================
-    public function updateUser(Request $request, $id)
+    public function updateUser(Request $request, int $id)
     {
         $user = User::findOrFail($id);
         $request->validate([
@@ -261,7 +261,7 @@ class AdminController extends Controller
         return redirect()->route($route)->with('success', "Data akun atas nama {$user->nama} berhasil diperbarui.");
     }
 
-    public function destroyUser($id)
+    public function destroyUser(int $id)
     {
         $user = User::findOrFail($id);
         $namaUser = $user->nama;
@@ -336,7 +336,7 @@ class AdminController extends Controller
         return redirect()->back()->with('success', count($request->klien_ids) . " Klien berhasil dihubungkan di bawah pengawasan PK: {$pk->nama}.");
     }
 
-    public function lepasKlien($klien_id)
+    public function lepasKlien(int $klien_id)
     {
         $klien = User::where('role', 'narapidana')->findOrFail($klien_id);
         $klien->update(['pembimbing_id' => null]);
@@ -360,7 +360,7 @@ class AdminController extends Controller
         return view('admin.kinerja.index', compact('semuaKinerja'));
     }
 
-    public function destroyKinerja($id)
+    public function destroyKinerja(int $id)
     {
         $kinerja = KinerjaPk::findOrFail($id);
         foreach (['litmas', 'pendampingan', 'pembimbingan', 'pengawasan'] as $kat) {
@@ -391,7 +391,7 @@ class AdminController extends Controller
         return view('admin.absensi.index', compact('semuaAbsensi'));
     }
 
-    public function destroyAbsensi($id)
+    public function destroyAbsensi(int $id)
     {
         $absensi = AbsensiKegiatan::findOrFail($id);
         if ($absensi->bukti_file && Storage::disk('public')->exists($absensi->bukti_file)) {

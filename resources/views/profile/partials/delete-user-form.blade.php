@@ -8,7 +8,7 @@
 
         <div class="min-w-0">
             <h2 class="text-lg font-bold text-red-600 sm:text-xl">Hapus Akun Permanen</h2>
-            <p class="mt-1 text-sm leading-relaxed text-slate-600">Setelah akun Anda dihapus, semua sumber daya dan data di dalamnya akan dihapus secara permanen. Jika Anda adalah Narapidana/Klien, pastikan Anda telah berkonsultasi dengan PK sebelum menghapus akun.</p>
+            <p class="mt-1 text-sm leading-relaxed text-slate-600">Setelah akun Anda dihapus, semua sumber daya dan data di dalamnya akan dihapus secara permanen. Jika Anda adalah Klien/Narapidana, pastikan Anda telah berkonsultasi dengan PK sebelum menghapus akun.</p>
         </div>
     </header>
 

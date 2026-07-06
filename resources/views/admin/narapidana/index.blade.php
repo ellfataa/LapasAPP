@@ -45,7 +45,7 @@
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                     <form method="GET" action="{{ route('admin.narapidana.index') }}" class="flex flex-col sm:flex-row gap-4">
                         <div class="relative flex-1">
-                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari berdasarkan Nama Lengkap atau Nomor Registrasi (NIK)..." class="block min-h-[48px] w-full pl-12 pr-4 rounded-xl border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm shadow-sm transition">
+                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari berdasarkan Nama Lengkap atau Nomor Induk (NIK/Nomor Registrasi)..." class="block min-h-[48px] w-full pl-12 pr-4 rounded-xl border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm shadow-sm transition">
                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
                                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                             </div>

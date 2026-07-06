@@ -1,10 +1,12 @@
 <x-app-layout>
 
+    <!-- PERBAIKAN: Tambahkan variabel showAlert di dalam x-data -->
     <div x-data="{
             sidebarOpen: false,
             showImageModal: false,
             images: [],
             currentIndex: 0,
+            showAlert: {{ session('success') || $errors->any() ? 'true' : 'false' }},
             openImageModal(imgArray) {
                 this.images = imgArray;
                 this.currentIndex = 0;
@@ -75,7 +77,7 @@
                         <div class="flex w-full flex-col sm:flex-row sm:items-center gap-3 xl:w-auto">
                             <form method="GET" action="{{ route('dashboard.admin') }}" class="m-0 flex min-h-[44px] w-full items-center overflow-hidden rounded-xl border border-slate-300 bg-white shadow-sm transition focus-within:border-blue-700 focus-within:ring-4 focus-within:ring-blue-100 sm:w-auto">
                                 <div class="flex self-stretch items-center justify-center border-r border-slate-200 bg-slate-50 px-3 text-slate-600">
-                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 00-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
                                 </div>
                                 <select name="year" onchange="this.form.submit()" class="block min-h-[44px] w-full cursor-pointer border-0 py-2.5 pl-3 pr-9 text-sm font-bold text-slate-800 focus:ring-0 sm:w-auto">
                                     @foreach($availableYears as $year) <option value="{{ $year }}" {{ $selectedYear == $year ? 'selected' : '' }}>Tahun {{ $year }}</option> @endforeach
@@ -257,6 +259,44 @@
                         </template>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- MODAL POP-UP NOTIFIKASI TAMBAHAN -->
+        <div x-show="showAlert" style="display: none;" class="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/65 px-4 py-6 backdrop-blur-sm transition-opacity" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+            <div @click="showAlert = false" class="absolute inset-0 cursor-pointer"></div>
+
+            <div class="relative z-10 w-full max-w-md transform overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-2xl transition-all sm:p-8" x-transition:enter="ease-out duration-300 delay-100" x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100">
+
+                @if(session('success'))
+                    <!-- Tampilan Jika Sukses -->
+                    <div class="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 ring-1 ring-inset ring-emerald-100">
+                        <svg class="h-10 w-10 text-emerald-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    <h3 class="mb-2 text-2xl font-bold text-slate-900">Berhasil!</h3>
+                    <p class="mb-6 text-base leading-relaxed text-slate-600">{{ session('success') }}</p>
+                @elseif($errors->any())
+                    <!-- Tampilan Jika Gagal/Error -->
+                    <div class="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-red-50 ring-1 ring-inset ring-red-100">
+                        <svg class="h-10 w-10 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </div>
+                    <h3 class="mb-3 text-2xl font-bold text-slate-900">Mohon Maaf, Gagal!</h3>
+                    <div class="mb-6 rounded-xl border border-red-100 bg-red-50 p-4 text-left text-sm leading-relaxed text-red-700">
+                        <ul class="list-inside list-disc space-y-1.5">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <button @click="showAlert = false" class="min-h-[48px] w-full rounded-xl bg-blue-900 px-4 py-3 font-bold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-200">
+                    Tutup Peringatan
+                </button>
             </div>
         </div>
 

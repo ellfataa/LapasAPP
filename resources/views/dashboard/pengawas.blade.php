@@ -27,7 +27,6 @@
 
                 <div class="p-5 sm:p-7 lg:p-8">
 
-                    <!-- PERBAIKAN: MEMISAHKAN DATA PHP KE SCRIPT GLOBAL AGAR TIDAK ERROR HTML -->
                     @php
                         $draftData = Auth::user()->kinerja_draft ? json_decode(Auth::user()->kinerja_draft, true) : null;
                     @endphp
@@ -165,7 +164,7 @@
                             <div class="border-b border-blue-200 bg-blue-100 px-5 py-4 sm:px-6">
                                 <h4 class="flex items-center gap-3 text-base font-bold text-blue-950 sm:text-lg">
                                     <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-900 text-sm font-extrabold text-white shadow-sm">1</span>
-                                    Penelitian Kemasyarakatan (Litmas) - Monitoring Real-Time
+                                    Penelitian Kemasyarakatan (Litmas)
                                 </h4>
                             </div>
                             <input type="hidden" name="litmas_kuota" value="{{ $dataLitmasRealtime['jumlah'] ?? 0 }}">
@@ -185,7 +184,7 @@
                                     <span class="text-2xl font-extrabold text-red-600">{{ $dataLitmasRealtime['belum_selesai'] ?? 0 }}</span>
                                 </div>
                                 <div class="rounded-xl border border-blue-200 bg-blue-100 p-4 text-center shadow-sm">
-                                    <span class="mb-1 block text-xs font-bold uppercase tracking-wide text-blue-800">% Kinerja</span>
+                                    <span class="mb-1 block text-xs font-bold uppercase tracking-wide text-blue-800">Skor Kinerja Litmas</span>
                                     <span class="text-2xl font-extrabold text-blue-700">{{ $dataLitmasRealtime['kinerja'] ?? '0%' }}</span>
                                 </div>
                             </div>
@@ -196,7 +195,7 @@
                             <div class="border-b border-slate-200 bg-white px-5 py-4 sm:px-6">
                                 <h4 class="flex items-center gap-3 text-base font-bold text-slate-900 sm:text-lg">
                                     <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-900 text-sm font-extrabold text-white shadow-sm">2</span>
-                                    Pembimbingan - Status Kinerja Klien
+                                    Pembimbingan
                                 </h4>
                             </div>
 
@@ -206,7 +205,7 @@
                                 <div class="lg:col-span-8">
                                     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
                                         <div class="bg-slate-100 border-b border-slate-200 px-4 py-3 text-sm font-bold text-slate-700 flex justify-between">
-                                            <span>Nama Klien / Narapidana</span>
+                                            <span>Nama Klien/Narapidana</span>
                                             <span>Status Pekerjaan</span>
                                         </div>
                                         <div class="max-h-[300px] overflow-y-auto custom-scrollbar divide-y divide-slate-100">
@@ -214,7 +213,7 @@
                                                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 hover:bg-slate-50 transition">
                                                     <div class="text-sm font-bold text-slate-800">
                                                         {{ $loop->iteration }}. {{ $klien->nama }}
-                                                        <span class="block text-xs font-medium text-slate-500 mt-0.5">NIK: {{ $klien->nomor_induk }}</span>
+                                                        <span class="block text-xs font-medium text-slate-500 mt-0.5">NIK/No Reg: {{ $klien->nomor_induk }}</span>
                                                     </div>
                                                     <select name="pembimbingan_klien[{{ $klien->id }}]"
                                                             x-model="klien['{{ $klien->id }}']"
@@ -241,7 +240,6 @@
                                 <div class="lg:col-span-4 flex flex-col h-full gap-4">
                                     <div class="bg-indigo-900 rounded-xl p-6 text-white shadow-md flex-1 flex flex-col justify-center relative overflow-hidden">
 
-                                        <!-- Ornamen desain blur di pojok kanan atas -->
                                         <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-5 rounded-full blur-xl pointer-events-none"></div>
 
                                         <p class="text-indigo-200 text-xs font-bold uppercase tracking-widest mb-1 relative z-10">Skor Kinerja Pembimbingan</p>
@@ -282,7 +280,7 @@
                             <div class="border-b border-blue-200 bg-blue-100 px-5 py-4 sm:px-6">
                                 <h4 class="flex items-center gap-3 text-base font-bold text-blue-950 sm:text-lg">
                                     <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-900 text-sm font-extrabold text-white shadow-sm">3</span>
-                                    Pengawasan (Otomatis dari Absensi Klien)
+                                    Pengawasan
                                 </h4>
                             </div>
 
@@ -296,7 +294,7 @@
                                     <input type="number" name="pengawasan_berhasil" value="{{ $dataPengawasanOtomatis['berhasil'] }}" readonly class="block min-h-[44px] w-full rounded-xl border-slate-200 bg-slate-100 px-4 text-base shadow-sm font-bold text-emerald-700">
                                 </div>
                                 <div>
-                                    <label class="mb-2 block text-sm font-bold text-slate-800">Skor Pengawasan %</label>
+                                    <label class="mb-2 block text-sm font-bold text-slate-800">Skor Kinerja Pengawasan</label>
                                     <div class="relative">
                                         <input type="text" value="{{ $dataPengawasanOtomatis['kuota'] > 0 ? number_format(($dataPengawasanOtomatis['berhasil'] / $dataPengawasanOtomatis['kuota']) * 100, 1) : 0 }}" readonly class="block min-h-[44px] w-full cursor-not-allowed rounded-xl border-slate-300 bg-slate-200 px-4 font-extrabold text-blue-800 shadow-sm">
                                         <span class="absolute right-3 top-2.5 font-bold text-slate-600">%</span>
@@ -310,7 +308,7 @@
                         <div class="mb-6 flex flex-col items-stretch justify-between gap-5 rounded-2xl border border-blue-200 bg-blue-50 p-5 sm:p-6 md:flex-row md:items-center">
                             <div class="text-center md:text-left">
                                 <h4 class="mb-1 text-xl font-extrabold text-blue-950">Estimasi Kinerja Akhir</h4>
-                                <p class="text-sm font-medium leading-relaxed text-blue-800">Nilai dihitung otomatis berdasarkan rasio keberhasilan 3 kategori di atas (Skor Pembimbingan harus dihitung terlebih dahulu).</p>
+                                <p class="text-sm font-medium leading-relaxed text-blue-800">Nilai dihitung otomatis berdasarkan rasio keberhasilan 3 kategori di atas.</p>
                             </div>
 
                             <div class="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 md:w-auto">
@@ -521,7 +519,7 @@
                             <tr>
                                 <th scope="col" class="w-48 px-6 py-4 text-xs font-bold uppercase tracking-wide text-slate-700">Tanggal Kegiatan</th>
                                 <th scope="col" class="w-64 px-6 py-4 text-xs font-bold uppercase tracking-wide text-slate-700">Data Klien Bimbingan</th>
-                                <th scope="col" class="px-6 py-4 text-xs font-bold uppercase tracking-wide text-slate-700">Jenis Kegiatan Sosial</th>
+                                <th scope="col" class="px-6 py-4 text-xs font-bold uppercase tracking-wide text-slate-700">Nama Kegiatan Sosial</th>
                                 <th scope="col" class="w-36 px-6 py-4 text-center text-xs font-bold uppercase tracking-wide text-slate-700">Bukti Foto</th>
                             </tr>
                         </thead>
@@ -531,7 +529,7 @@
                                     <td class="whitespace-nowrap px-6 py-5 align-top font-bold text-slate-900">{{ \Carbon\Carbon::parse($item->tanggal_waktu)->format('d F Y') }}</td>
                                     <td class="px-6 py-5 align-top">
                                         <span class="block text-lg font-bold text-blue-950">{{ $item->narapidana->nama }}</span>
-                                        <span class="mt-1 inline-block rounded-md bg-slate-100 px-2.5 py-1 text-sm font-semibold text-slate-600 ring-1 ring-inset ring-slate-200">NIK: {{ $item->narapidana->nomor_induk }}</span>
+                                        <span class="mt-1 inline-block rounded-md bg-slate-100 px-2.5 py-1 text-sm font-semibold text-slate-600 ring-1 ring-inset ring-slate-200">NIK/No Reg: {{ $item->narapidana->nomor_induk }}</span>
                                     </td>
                                     <td class="px-6 py-5 leading-relaxed align-top">{{ $item->jenis_kegiatan }}</td>
                                     <td class="px-6 py-5 text-center align-top">

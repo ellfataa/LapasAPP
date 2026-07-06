@@ -16,7 +16,7 @@
                     <h2 class="font-bold text-xl sm:text-2xl md:text-3xl text-slate-900 leading-tight tracking-tight">
                         Rekap Data & Distribusi Klien
                     </h2>
-                    <p class="text-sm text-slate-500 mt-1">Pantau jumlah klien masing-masing PK dan hubungkan klien ke PK Pembimbingnya.</p>
+                    <p class="text-sm text-slate-500 mt-1">Pantau jumlah klien masing-masing PK dan hubungkan klien ke PK/Pengawas.</p>
                 </div>
             </div>
 
@@ -77,7 +77,7 @@
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"></path></svg>
                     </span>
                     <div>
-                        <h3 class="font-bold text-lg text-white">Hubungkan Klien dengan PK Pembimbing</h3>
+                        <h3 class="font-bold text-lg text-white">Hubungkan Klien dengan PK/Pengawas</h3>
                         <p class="text-indigo-200 text-xs mt-0.5">Pilih satu PK, lalu pilih banyak Klien sekaligus untuk didistribusikan.</p>
                     </div>
                 </div>
@@ -90,7 +90,7 @@
                         <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
                             <label class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
                                 <span class="bg-indigo-200 text-indigo-800 w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span>
-                                Pilih PK (Pengawas)
+                                Pilih PK/Pengawas
                             </label>
                             <select name="pk_id" required class="block w-full rounded-xl border-slate-300 bg-white py-3 px-4 text-sm text-slate-900 shadow-sm transition hover:border-indigo-400 focus:border-indigo-600 focus:ring-indigo-600 cursor-pointer">
                                 <option value="" disabled selected>-- Klik untuk memilih 1 PK Pembimbing --</option>
@@ -109,8 +109,8 @@
                             </label>
 
                             <!-- Bantuan Instruksi Windows/Mac -->
-                            <p class="text-[11px] text-emerald-700 font-semibold mb-2 bg-emerald-100 p-2 rounded-lg">
-                                Tips: Tahan tombol <kbd class="bg-white border px-1 rounded shadow-sm">Ctrl</kbd> (Windows) atau <kbd class="bg-white border px-1 rounded shadow-sm">Cmd ⌘</kbd> (Mac) sambil mengklik nama klien untuk memilih banyak sekaligus.
+                            <p class="text-[11px] text-yellow-700 font-semibold mb-2 bg-yellow-100 p-2 rounded-lg">
+                                Tips: Tahan tombol <kbd class="bg-white border px-1 rounded shadow-sm">Ctrl</kbd> (Windows) atau <kbd class="bg-white border px-1 rounded shadow-sm">Cmd ⌘</kbd> (Apple MacBook) sambil mengklik nama klien untuk memilih banyak sekaligus.
                             </p>
 
                             <select name="klien_ids[]" multiple required size="8" class="block w-full rounded-xl border-emerald-300 bg-white py-2 px-3 text-sm text-slate-900 shadow-sm transition focus:border-emerald-600 focus:ring-emerald-600 custom-scrollbar outline-none">

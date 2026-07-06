@@ -92,21 +92,22 @@ class AbsensiController extends Controller
         try {
             $this->pushImageToGoogleSheets($absensiBaru, $user);
         } catch (\Exception $e) {
-            // Tangkap error agar web tidak crash meskipun Google API gagal
             Log::error('Google Sheets Sync Failed (Store): ' . $e->getMessage());
+            // PERBAIKAN: Beritahu pengguna jika masuk database lokal tapi gagal ke Spreadsheet
+            return redirect()->back()->withErrors(['google_sync' => 'Absensi berhasil tersimpan di web, NAMUN GAGAL masuk ke Spreadsheet Bapas. Alasan: ' . $e->getMessage()]);
         }
 
-        return redirect()->back()->with('success', 'Absensi dan bukti kegiatan berhasil dikirim untuk bulan ini!');
+        return redirect()->back()->with('success', 'Absensi dan bukti kegiatan berhasil dikirim ke Web dan Spreadsheet!');
     }
 
-    public function edit($id)
+    public function edit(int $id)
     {
         $absensi = AbsensiKegiatan::where('narapidana_id', Auth::id())->findOrFail($id);
         $pembimbingSaya = User::where('role', 'pengawas')->where('id', Auth::user()->pembimbing_id)->first();
         return view('dashboard.edit_absensi_narapidana', compact('absensi', 'pembimbingSaya'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         $user = Auth::user();
         $absensi = AbsensiKegiatan::where('narapidana_id', $user->id)->findOrFail($id);
@@ -160,6 +161,7 @@ class AbsensiController extends Controller
                 $this->pushImageToGoogleSheets($absensi, $user);
             } catch (\Exception $e) {
                 Log::error('Google Sheets Sync Failed (Update): ' . $e->getMessage());
+                return redirect()->route('dashboard.narapidana')->withErrors(['google_sync' => 'Data terupdate di web, NAMUN GAGAL sinkron ke Spreadsheet. Alasan: ' . $e->getMessage()]);
             }
         }
 
@@ -170,12 +172,14 @@ class AbsensiController extends Controller
     // ==========================================
     // BAGIAN GOOGLE SHEETS API LOGIC
     // ==========================================
-    private function pushImageToGoogleSheets($absensi, $klien)
+    private function pushImageToGoogleSheets(AbsensiKegiatan $absensi, User $klien): void
     {
-        // 1. Ambil Nama Tab Sheet (Sesuai Nama PK Pembimbing)
+        // 1. Ambil Nama Tab Sheet
         $pembimbing = User::find($absensi->pengawas_id);
-        if (!$pembimbing) return;
-        $sheetName = trim($pembimbing->nama);
+        if (!$pembimbing) throw new \Exception("Pengawas tidak ditemukan di database.");
+
+        // KITA TAMBAHKAN PROTEKSI UNTUK MENGHAPUS TITIK DI AKHIR NAMA JIKA ADA
+        $sheetName = rtrim(trim($pembimbing->nama), '.');
 
         // 2. Tentukan Kriteria Pencarian
         $klienName = trim($klien->nama);
@@ -189,17 +193,28 @@ class AbsensiController extends Controller
         $client = new Client();
         $client->setApplicationName('Bapas Sync App');
         $client->setScopes([Sheets::SPREADSHEETS]);
-        $client->setAuthConfig(storage_path('app/google-credentials.json'));
+
+        // PROTEKSI: Cek apakah file credentials benar-benar ada di Hostinger
+        $credentialPath = storage_path('app/google-credentials.json');
+        if (!file_exists($credentialPath)) {
+            throw new \Exception("File Kredensial API tidak ditemukan di server. Harap upload google-credentials.json ke folder storage/app/.");
+        }
+        $client->setAuthConfig($credentialPath);
 
         $service = new Sheets($client);
         $spreadsheetId = '1yHJCmGakpsyLx16FmWeNIyKp6EzA9Y8VS3aI_D3eTEg';
 
         // 4. Ambil seluruh data Sheet untuk dipindai (A1 sampai ZZ200)
-        $response = $service->spreadsheets_values->get($spreadsheetId, "'{$sheetName}'!A1:ZZ200");
+        try {
+            $response = $service->spreadsheets_values->get($spreadsheetId, "'{$sheetName}'!A1:ZZ200");
+        } catch (\Exception $apiErr) {
+            throw new \Exception("Gagal mengakses Tab '{$sheetName}'. Pastikan tab tersebut ada dan akun Service Account sudah dijadikan Editor. Detail API: " . $apiErr->getMessage());
+        }
+
         $values = $response->getValues();
 
         if (empty($values)) {
-            throw new \Exception("Sheet tab '{$sheetName}' tidak ditemukan atau kosong.");
+            throw new \Exception("Sheet tab '{$sheetName}' kosong.");
         }
 
         $targetRow = -1;
@@ -248,33 +263,30 @@ class AbsensiController extends Controller
             $colLetterTanggal = $this->getColumnLetter($targetColIndexFoto + 1);
             $rangeTanggal = "'{$sheetName}'!{$colLetterTanggal}{$targetRow}";
 
-            // Karena kita mau update dua cell sekaligus, kita pakai fungsi batchUpdate
-            $data = [
-                new ValueRange([
-                    'range' => $rangeFoto,
-                    'values' => [[$formulaFoto]]
-                ]),
-                new ValueRange([
-                    'range' => $rangeTanggal,
-                    'values' => [[$tanggalApelTeks]]
-                ])
-            ];
+            $valueRangeFoto = new ValueRange();
+            $valueRangeFoto->setRange($rangeFoto);
+            $valueRangeFoto->setValues([[$formulaFoto]]);
 
-            $body = new \Google\Service\Sheets\BatchUpdateValuesRequest([
-                'valueInputOption' => 'USER_ENTERED',
-                'data' => $data
-            ]);
+            $valueRangeTanggal = new ValueRange();
+            $valueRangeTanggal->setRange($rangeTanggal);
+            $valueRangeTanggal->setValues([[$tanggalApelTeks]]);
+
+            $data = [$valueRangeFoto, $valueRangeTanggal];
+
+            $body = new \Google\Service\Sheets\BatchUpdateValuesRequest();
+            $body->setValueInputOption('USER_ENTERED');
+            $body->setData($data);
 
             // Tembak Data ke Sheets secara bersamaan (Foto & Tanggal)
             $service->spreadsheets_values->batchUpdate($spreadsheetId, $body);
 
         } else {
-            throw new \Exception("Koordinat sel tidak ditemukan (Baris: {$targetRow}, Kolom: {$targetColIndexFoto}).");
+            throw new \Exception("Koordinat sel tidak ditemukan. (Baris Nama '{$klienName}': " . ($targetRow !== -1 ? 'Ketemu' : 'GAGAL') . " | Kolom Bulan '{$bulanTarget}': " . ($targetColIndexFoto !== -1 ? 'Ketemu' : 'GAGAL') . ")");
         }
     }
 
-    // Helper Function: Mengubah angka kolom menjadi format huruf Excel (Contoh: 0 -> A, 27 -> AB)
-    private function getColumnLetter($num)
+    // Helper Function
+    private function getColumnLetter(int $num)
     {
         $numeric = $num % 26;
         $letter = chr(65 + $numeric);

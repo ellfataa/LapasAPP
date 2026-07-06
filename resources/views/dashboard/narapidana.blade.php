@@ -224,7 +224,7 @@
                                     <td class="px-6 py-5 text-slate-700 font-medium">
                                         @if($item->pengawas)
                                             <span class="text-blue-900 font-bold block">{{ $item->pengawas->nama }}</span>
-                                            <span class="text-xs text-slate-500 bg-slate-200 px-2 py-0.5 rounded mt-1 inline-block">NIP: {{ $item->pengawas->nomor_induk }}</span>
+                                            <span class="text-xs text-slate-500 bg-slate-200 px-2 py-0.5 rounded mt-1 inline-block">NRP/NIP: {{ $item->pengawas->nomor_induk }}</span>
                                         @else
                                             <span class="text-amber-600 italic text-sm font-semibold">Belum Dipilih</span>
                                         @endif

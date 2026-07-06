@@ -50,15 +50,21 @@
                             </div>
 
                             <div class="md:col-span-2">
-                                <label for="pengawas_id" class="mb-2 block text-sm font-bold text-slate-800 sm:text-base">Penanggung Jawab PK/Pengawas</label>
-                                <select id="pengawas_id" name="pengawas_id" required class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm transition hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700 cursor-pointer">
-                                    <option value="" disabled selected>-- Pilih PK Lapas yang Mengampu Anda --</option>
-                                    @foreach($daftarPengawas as $pk)
-                                        <option value="{{ $pk->id }}" {{ old('pengawas_id') == $pk->id ? 'selected' : '' }}>
-                                            {{ $pk->nama }} (NIP/NRP: {{ $pk->nomor_induk }})
-                                        </option>
-                                    @endforeach
-                                </select>
+                                <label class="mb-2 block text-sm font-bold text-slate-800 sm:text-base">Penanggung Jawab PK/Pengawas Anda</label>
+
+                                <!-- PERBAIKAN: Menampilkan Info PK secara Read-Only sama seperti form tambah -->
+                                <div class="flex items-center gap-3 min-h-[48px] w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-base shadow-sm">
+                                    <svg class="h-6 w-6 text-slate-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    <div class="min-w-0">
+                                        @if($pembimbingSaya)
+                                            <span class="block text-slate-800 font-bold truncate">{{ $pembimbingSaya->nama }}</span>
+                                            <span class="block text-slate-500 text-xs font-medium truncate">NRP/NIP: {{ $pembimbingSaya->nomor_induk }}</span>
+                                        @else
+                                            <span class="block text-red-600 font-bold truncate">Belum Dipilih/Tidak Ada</span>
+                                        @endif
+                                    </div>
+                                </div>
+                                <p class="mt-2 text-xs text-slate-500 italic">*Jika Anda memperbarui foto/tanggal, sistem akan otomatis melakukan sinkronisasi ulang ke Google Sheets milik PK/Pengawas ini.</p>
                             </div>
                         </div>
 
@@ -79,7 +85,6 @@
                                     <div class="flex min-w-0 flex-col justify-center p-5 sm:p-7 lg:p-8">
                                         <label for="bukti_file" class="block text-base font-bold text-slate-900">Ganti Foto Baru (Opsional)</label>
 
-                                        <!-- Update keterangan batas maksimal file menjadi 10MB -->
                                         <p class="mt-1.5 text-sm leading-relaxed text-slate-500">Maksimal 10MB. Biarkan kosong jika tidak ingin mengubah foto yang sudah ada.</p>
 
                                         <div class="mt-5 rounded-2xl border-2 border-dashed border-slate-300 bg-white p-3 transition hover:border-blue-400 hover:bg-blue-50/40 sm:p-4">

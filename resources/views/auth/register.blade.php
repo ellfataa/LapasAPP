@@ -44,7 +44,7 @@
                     <div>
                         <label for="nama" class="mb-2 block text-sm font-bold text-slate-800">
                             Nama Lengkap
-                            <span class="block text-[11px] font-normal text-red-500 mt-0.5">*Wajib sama persis dengan ejaan di SK/Spreadsheet (termasuk titik/koma)</span>
+                            <span class="block text-[11px] font-normal text-red-500 mt-0.5">*Wajib sama persis dengan ejaan di Spreadsheet (termasuk titik/koma)</span>
                         </label>
 
                         <div class="relative">
@@ -102,7 +102,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M8 10V7a4 4 0 118 0v3" />
                                 </svg>
                             </span>
-                            <x-text-input id="password" class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white py-3 pl-12 pr-12 text-base text-slate-900 shadow-sm transition placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700" type="password" name="password" required />
+                            <x-text-input id="password" class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white py-3 pl-12 pr-12 text-base text-slate-900 shadow-sm transition placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700" type="password" name="password" placeholder="Minimal 8 karakter" required />
                             <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-500 transition hover:text-slate-700" aria-label="Tampilkan password">
                                 <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
                                     <path d="M1.5 12C1.5 12 5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z" stroke-linecap="round" stroke-linejoin="round" />
@@ -121,7 +121,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75l2 2 4-4m4.5-1.75V7a2 2 0 00-2-2h-1V4a4.5 4.5 0 00-9 0v1h-1a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-2" />
                                 </svg>
                             </span>
-                            <x-text-input id="password_confirmation" class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white py-3 pl-12 pr-12 text-base text-slate-900 shadow-sm transition placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700" type="password" name="password_confirmation" required />
+                            <x-text-input id="password_confirmation" class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white py-3 pl-12 pr-12 text-base text-slate-900 shadow-sm transition placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700" type="password" name="password_confirmation" placeholder="Minimal 8 karakter" required />
                             <button type="button" id="toggle-password-confirmation" class="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-500 transition hover:text-slate-700" aria-label="Tampilkan konfirmasi password">
                                 <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
                                     <path d="M1.5 12C1.5 12 5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z" stroke-linecap="round" stroke-linejoin="round" />
