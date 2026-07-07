@@ -1,4 +1,4 @@
-<nav x-data="{ open: false }" class="relative z-50 border-b border-blue-800/70 bg-blue-900 shadow-lg shadow-slate-900/10">
+<nav x-data="{ open: false }" class="sticky sm:relative top-0 w-full z-50 border-b border-blue-800/70 bg-blue-900 shadow-lg shadow-slate-900/10">
     @php
         $role = Auth::user()->role;
         if ($role === 'admin') {
@@ -73,7 +73,8 @@
         </div>
     </div>
 
-    <div x-cloak x-show="open" x-transition class="border-t border-white/10 bg-blue-950/95 backdrop-blur-sm sm:hidden z-50 relative">
+    <!-- Dropdown Menu Mobile -->
+    <div x-cloak x-show="open" x-transition class="border-t border-white/10 bg-blue-950/95 backdrop-blur-sm sm:hidden z-50 absolute w-full shadow-lg">
         <div class="space-y-2 px-4 pb-4 pt-4">
             <a href="{{ $urlDashboard }}" @class(['flex min-h-12 w-full items-center gap-3 rounded-xl px-4 py-3 text-base font-semibold transition duration-200 focus:outline-none focus:ring-2 focus:ring-white/50', 'bg-white/15 text-white ring-1 ring-inset ring-white/20' => $isDashboardActive, 'text-blue-100 hover:bg-white/10 hover:text-white' => ! $isDashboardActive])>
                 <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10.5L12 3l9 7.5M5.25 9.75V21h13.5V9.75M9 21v-6h6v6"/></svg>
