@@ -141,7 +141,7 @@
                         </button>
                     </div>
 
-                    {{-- FITUR LOGIN GOOGLE (DINONAKTIFKAN SEMENTARA MENGGUNAKAN KOMENTAR BLADE)
+                    {{-- FITUR LOGIN GOOGLE (DINONAKTIFKAN SEMENTARA)
                     <div class="relative py-1 mt-2">
                         <div class="absolute inset-0 flex items-center">
                             <div class="w-full border-t border-slate-200"></div>

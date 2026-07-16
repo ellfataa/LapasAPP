@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\KinerjaPk;
-use App\Models\User;
-use App\Models\AbsensiKegiatan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,27 +12,20 @@ class KinerjaPkController extends Controller
     {
         $userId = Auth::id();
 
-        // 1. Kunci Periode ke Bulan & Tahun Berjalan Secara Real-Time
+        // 1. Kunci Periode ke Bulan & Tahun Berjalan
         $bulanSekarang = date('m');
         $tahunSekarang = date('Y');
 
-        // 2. Validasi Strict: 1 Kali Submit Per Bulan
-        $sudahSubmit = KinerjaPk::where('pengawas_id', $userId)
-            ->where('bulan', $bulanSekarang)
-            ->where('tahun', $tahunSekarang)
-            ->exists();
-
-        if ($sudahSubmit) {
-            return redirect()->back()->withErrors(['kinerja' => 'Anda sudah mengirimkan formulir penilaian kinerja untuk bulan ini. Laporan kinerja hanya dapat dilakukan 1 kali per bulan.']);
-        }
-
-        // 3. Validasi Input Dasar
+        // 2. Validasi Input Dasar
         $request->validate([
             'litmas_kuota' => ['required', 'numeric', 'min:0'],
             'litmas_berhasil' => ['required', 'numeric', 'min:0'],
-            'pembimbingan_klien' => ['nullable', 'array'],
+            'pembimbingan_kuota' => ['required', 'numeric', 'min:0'],
+            'pembimbingan_berhasil' => ['required', 'numeric', 'min:0'],
+            'pengawasan_kuota' => ['required', 'numeric', 'min:0'],
+            'pengawasan_berhasil' => ['required', 'numeric', 'min:0'],
         ], [
-            'required' => 'Data target dan keberhasilan wajib diisi.'
+            'required' => 'Data kinerja dari Spreadsheet belum terisi/terdeteksi.'
         ]);
 
         $dataToSave = [
@@ -50,52 +41,33 @@ class KinerjaPkController extends Controller
         $litmasBerhasil = $request->input('litmas_berhasil', 0);
         $dataToSave['litmas_kuota'] = $litmasKuota;
         $dataToSave['litmas_berhasil'] = $litmasBerhasil;
-        $dataToSave['litmas_file'] = null; // Dikosongkan
-        $dataToSave['litmas_link'] = null; // Dikosongkan
+        $dataToSave['litmas_file'] = null;
+        $dataToSave['litmas_link'] = null;
 
         $litmasPersen = ($litmasKuota > 0) ? ($litmasBerhasil / $litmasKuota) * 100 : 0;
         $totalPersen += $litmasPersen;
 
         // --- B. KALKULASI PEMBIMBINGAN ---
-        $klienData = $request->input('pembimbingan_klien', []);
-        $totalKlien = count($klienData);
-        $jumlahBekerja = 0;
-        $detailKlien = [];
+        $pembimbinganKuota = $request->input('pembimbingan_kuota', 0);
+        $pembimbinganBerhasil = $request->input('pembimbingan_berhasil', 0);
+        $dataToSave['pembimbingan_kuota'] = $pembimbinganKuota;
+        $dataToSave['pembimbingan_berhasil'] = $pembimbinganBerhasil;
+        $dataToSave['pembimbingan_detail'] = null;
+        $dataToSave['pembimbingan_file'] = null;
+        $dataToSave['pembimbingan_link'] = null;
 
-        foreach ($klienData as $idKlien => $status) {
-            if ($status === 'bekerja') {
-                $jumlahBekerja++;
-            }
-            $detailKlien[] = [
-                'klien_id' => $idKlien,
-                'status' => $status
-            ];
-        }
-
-        $dataToSave['pembimbingan_kuota'] = $totalKlien;
-        $dataToSave['pembimbingan_berhasil'] = $jumlahBekerja;
-        $dataToSave['pembimbingan_detail'] = json_encode($detailKlien);
-        $dataToSave['pembimbingan_file'] = null; // Dikosongkan
-        $dataToSave['pembimbingan_link'] = null; // Dikosongkan
-
-        $pembimbinganPersen = ($totalKlien > 0) ? ($jumlahBekerja / $totalKlien) * 100 : 0;
+        $pembimbinganPersen = ($pembimbinganKuota > 0) ? ($pembimbinganBerhasil / $pembimbinganKuota) * 100 : 0;
         $totalPersen += $pembimbinganPersen;
 
-        // --- C. KALKULASI PENGAWASAN (OTOMATIS SERVER-SIDE) ---
-        // Mengambil data murni dari database agar tidak bisa diakali via Inspect Element
-        $jumlahKlienDiampu = User::where('role', 'narapidana')->where('pembimbing_id', $userId)->count();
-        $jumlahKlienAbsen = AbsensiKegiatan::where('pengawas_id', $userId)
-            ->whereMonth('tanggal_waktu', $bulanSekarang)
-            ->whereYear('tanggal_waktu', $tahunSekarang)
-            ->distinct('narapidana_id')
-            ->count('narapidana_id');
+        // --- C. KALKULASI PENGAWASAN ---
+        $pengawasanKuota = $request->input('pengawasan_kuota', 0);
+        $pengawasanBerhasil = $request->input('pengawasan_berhasil', 0);
+        $dataToSave['pengawasan_kuota'] = $pengawasanKuota;
+        $dataToSave['pengawasan_berhasil'] = $pengawasanBerhasil;
+        $dataToSave['pengawasan_file'] = null;
+        $dataToSave['pengawasan_link'] = null;
 
-        $dataToSave['pengawasan_kuota'] = $jumlahKlienDiampu;
-        $dataToSave['pengawasan_berhasil'] = $jumlahKlienAbsen;
-        $dataToSave['pengawasan_file'] = null; // Dikosongkan
-        $dataToSave['pengawasan_link'] = null; // Dikosongkan
-
-        $pengawasanPersen = ($jumlahKlienDiampu > 0) ? ($jumlahKlienAbsen / $jumlahKlienDiampu) * 100 : 0;
+        $pengawasanPersen = ($pengawasanKuota > 0) ? ($pengawasanBerhasil / $pengawasanKuota) * 100 : 0;
         $totalPersen += $pengawasanPersen;
 
 
@@ -114,15 +86,15 @@ class KinerjaPkController extends Controller
             $dataToSave['predikat'] = 'Sangat Kurang';
         }
 
-        // 4. Simpan ke Database
-        KinerjaPk::create($dataToSave);
-
-        // 5. Bersihkan Draft Auto-Save
-        User::where('id', $userId)->update(['kinerja_draft' => null]);
+        // 4. Update Data Real-time ke Database
+        KinerjaPk::updateOrCreate(
+            ['pengawas_id' => $userId, 'bulan' => $bulanSekarang, 'tahun' => $tahunSekarang],
+            $dataToSave
+        );
 
         $namaBulanIndo = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
         $bulanTeks = $namaBulanIndo[(int)$bulanSekarang - 1];
 
-        return redirect()->back()->with('success', "Kinerja bulan {$bulanTeks} {$tahunSekarang} berhasil disimpan secara permanen. Predikat Anda: " . $dataToSave['predikat']);
+        return redirect()->back()->with('success', "Laporan Kinerja bulan {$bulanTeks} {$tahunSekarang} berhasil disinkronkan.");
     }
 }

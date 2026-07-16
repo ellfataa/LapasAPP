@@ -6,7 +6,7 @@ use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\KinerjaPkController;
 use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Auth;
-// use App\Http\Controllers\Auth\GoogleAuthController; // Nonaktifkan sementara
+// use App\Http\Controllers\Auth\GoogleAuthController; //Nonaktifkan sementara
 
 // 1. RUTE UTAMA: Otomatis arahkan sesuai status login
 Route::get('/', function () {
@@ -22,7 +22,6 @@ Route::get('/', function () {
 
 // Grup Route yang butuh Login
 Route::middleware('auth')->group(function () {
-    // RUTE TERMINAL (Solusi agar sistem Laravel tidak bingung)
     Route::get('/dashboard', function () {
         $role = Auth::user()->role;
         if ($role === 'admin') return redirect()->route('dashboard.admin');
@@ -72,7 +71,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/pengawas/dashboard', [AbsensiController::class, 'indexPengawas'])->name('dashboard.pengawas');
         Route::post('/pengawas/kinerja', [KinerjaPkController::class, 'store'])->name('kinerja-pk.store');
 
-        // RUTE BARU AUTO-SAVE DRAFT KINERJA
+        // RUTE AUTO-SAVE DRAFT KINERJA
         Route::post('/pengawas/save-draft', [AbsensiController::class, 'saveDraftPk'])->name('pengawas.save_draft');
     });
 

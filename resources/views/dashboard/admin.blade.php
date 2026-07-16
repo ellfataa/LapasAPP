@@ -22,7 +22,7 @@
                     </h2>
                 </div>
 
-                <!-- 4 KARTU STATISTIK ATAS -->
+                <!-- STATISTIK ATAS -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6">
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center gap-5 transition hover:shadow-md hover:border-slate-300">
                         <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-700">
@@ -69,17 +69,16 @@
 
                 <div class="grid grid-cols-1 gap-6 lg:gap-8">
 
-                    <!-- TABEL KINERJA PK TERBARU (FULL WIDTH) -->
+                    <!-- TABEL KINERJA PK TERBARU -->
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
                         <div class="bg-gradient-to-r from-amber-600 to-orange-600 px-5 py-4 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 text-white border-b border-amber-500">
                             <h3 class="font-bold text-base flex items-center gap-2">
-                                <svg class="w-5 h-5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2m0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                                <svg class="w-5 h-5 opacity-80 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2m0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                                 5 Penilaian Kinerja PK Terbaru
                             </h3>
 
                             <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
                                 <form method="GET" action="{{ route('dashboard.admin') }}" class="flex w-full sm:w-auto gap-2">
-                                    <!-- Hidden Input Absensi agar filternya tidak hilang saat Kinerja diganti -->
                                     <input type="hidden" name="absensi_month" value="{{ $absensiMonth }}">
                                     <input type="hidden" name="absensi_year" value="{{ $absensiYear }}">
 
@@ -98,45 +97,44 @@
                                 <a href="{{ route('admin.kinerja.index') }}" class="text-xs font-bold bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition-colors ring-1 ring-inset ring-white/20 whitespace-nowrap">Lihat Semua</a>
                             </div>
                         </div>
-                        <div class="overflow-x-auto p-0 flex-1">
-                            <table class="w-full text-left text-sm text-slate-700">
+                        <div class="overflow-x-auto custom-scrollbar p-0 flex-1">
+                            <table class="w-full text-left text-sm text-slate-700 min-w-[700px]">
                                 <thead>
                                     <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 text-xs uppercase tracking-wider">
-                                        <th class="px-5 py-3 font-bold">Tgl Submit</th>
+                                        <th class="px-5 py-3 font-bold w-32">Tgl Simpan</th>
                                         <th class="px-5 py-3 font-bold">Nama PK/Pengawas</th>
-                                        <th class="px-5 py-3 font-bold">Periode Laporan</th>
-                                        <th class="px-5 py-3 text-center font-bold">Skor Rata-Rata</th>
-                                        <th class="px-5 py-3 text-right font-bold">Predikat</th>
+                                        <th class="px-5 py-3 font-bold w-40">Periode Laporan</th>
+                                        <th class="px-5 py-3 text-center font-bold w-32">Skor Akhir</th>
+                                        <th class="px-5 py-3 text-right font-bold w-32">Predikat</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
                                     @forelse($ringkasanKinerja as $kinerja)
                                         <tr class="hover:bg-slate-50 transition">
-                                            <td class="px-5 py-3.5 text-xs">{{ $kinerja->created_at->format('d/m/Y') }}</td>
+                                            <td class="px-5 py-3.5 text-xs text-slate-500 font-medium">{{ $kinerja->created_at->format('d/m/Y') }}</td>
                                             <td class="px-5 py-3.5 font-bold text-slate-900">{{ $kinerja->pengawas->nama ?? '-' }}</td>
                                             <td class="px-5 py-3.5 font-medium">{{ $bulansFilter[$kinerja->bulan - 1] }} {{ $kinerja->tahun }}</td>
-                                            <td class="px-5 py-3.5 text-center font-bold">{{ $kinerja->rata_rata }}%</td>
-                                            <td class="px-5 py-3.5 text-right font-extrabold text-amber-600">{{ $kinerja->predikat }}</td>
+                                            <td class="px-5 py-3.5 text-center font-extrabold text-blue-700">{{ $kinerja->rata_rata }}%</td>
+                                            <td class="px-5 py-3.5 text-right font-extrabold {{ $kinerja->predikat == 'Sangat Baik' ? 'text-emerald-600' : ($kinerja->predikat == 'Baik' ? 'text-blue-600' : ($kinerja->predikat == 'Cukup' ? 'text-yellow-600' : ($kinerja->predikat == 'Kurang' ? 'text-orange-600' : 'text-red-600'))) }}">{{ $kinerja->predikat }}</td>
                                         </tr>
                                     @empty
-                                        <tr><td colspan="5" class="py-8 text-center italic text-slate-400">Belum ada data laporan kinerja pada bulan <b>{{ $bulansFilter[(int)$kinerjaMonth - 1] }} {{ $kinerjaYear }}</b>.</td></tr>
+                                        <tr><td colspan="5" class="py-10 text-center italic text-slate-400 font-medium">Belum ada data laporan kinerja pada bulan <b>{{ $bulansFilter[(int)$kinerjaMonth - 1] }} {{ $kinerjaYear }}</b>.</td></tr>
                                     @endforelse
                                 </tbody>
                             </table>
                         </div>
                     </div>
 
-                    <!-- TABEL ABSENSI TERBARU (FULL WIDTH) -->
+                    <!-- TABEL ABSENSI TERBARU -->
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
                         <div class="bg-gradient-to-r from-teal-700 to-emerald-700 px-5 py-4 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 text-white border-b border-teal-600">
                             <h3 class="font-bold text-base flex items-center gap-2">
-                                <svg class="w-5 h-5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                <svg class="w-5 h-5 opacity-80 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                                 5 Laporan Absensi Klien Terbaru
                             </h3>
 
                             <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
                                 <form method="GET" action="{{ route('dashboard.admin') }}" class="flex w-full sm:w-auto gap-2">
-                                    <!-- Hidden Input Kinerja agar filternya tidak hilang saat Absensi diganti -->
                                     <input type="hidden" name="kinerja_month" value="{{ $kinerjaMonth }}">
                                     <input type="hidden" name="kinerja_year" value="{{ $kinerjaYear }}">
 
@@ -155,26 +153,26 @@
                                 <a href="{{ route('admin.absensi.index') }}" class="text-xs font-bold bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition-colors ring-1 ring-inset ring-white/20 whitespace-nowrap">Lihat Semua</a>
                             </div>
                         </div>
-                        <div class="overflow-x-auto p-0 flex-1">
-                            <table class="w-full text-left text-sm text-slate-700">
+                        <div class="overflow-x-auto custom-scrollbar p-0 flex-1">
+                            <table class="w-full text-left text-sm text-slate-700 min-w-[700px]">
                                 <thead>
                                     <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 text-xs uppercase tracking-wider">
-                                        <th class="px-5 py-3 font-bold">Tanggal Kegiatan</th>
-                                        <th class="px-5 py-3 font-bold">Nama Klien</th>
-                                        <th class="px-5 py-3 font-bold">Jenis Kegiatan</th>
-                                        <th class="px-5 py-3 text-right font-bold">Dibimbing Oleh PK</th>
+                                        <th class="px-5 py-3 font-bold w-32">Tgl Kegiatan</th>
+                                        <th class="px-5 py-3 font-bold w-48">Nama Klien</th>
+                                        <th class="px-5 py-3 font-bold">Nama Kegiatan Sosial</th>
+                                        <th class="px-5 py-3 text-right font-bold w-48">Dibimbing Oleh PK</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
                                     @forelse($ringkasanAbsensi as $absen)
                                         <tr class="hover:bg-slate-50 transition">
-                                            <td class="px-5 py-3.5 font-bold">{{ \Carbon\Carbon::parse($absen->tanggal_waktu)->format('d/m/Y') }}</td>
+                                            <td class="px-5 py-3.5 font-bold text-slate-800">{{ \Carbon\Carbon::parse($absen->tanggal_waktu)->format('d/m/Y') }}</td>
                                             <td class="px-5 py-3.5 font-bold text-slate-900">{{ $absen->narapidana->nama ?? '-' }}</td>
                                             <td class="px-5 py-3.5 text-slate-600">{{ $absen->jenis_kegiatan }}</td>
-                                            <td class="px-5 py-3.5 text-right font-medium text-xs">{{ $absen->pengawas->nama ?? 'Belum Dipilih' }}</td>
+                                            <td class="px-5 py-3.5 text-right font-medium text-xs text-indigo-700">{{ $absen->pengawas->nama ?? 'Belum Dipilih' }}</td>
                                         </tr>
                                     @empty
-                                        <tr><td colspan="4" class="py-8 text-center italic text-slate-400">Belum ada data laporan absensi pada bulan <b>{{ $bulansFilter[(int)$absensiMonth - 1] }} {{ $absensiYear }}</b>.</td></tr>
+                                        <tr><td colspan="4" class="py-10 text-center italic text-slate-400 font-medium">Belum ada data laporan absensi pada bulan <b>{{ $bulansFilter[(int)$absensiMonth - 1] }} {{ $absensiYear }}</b>.</td></tr>
                                     @endforelse
                                 </tbody>
                             </table>
@@ -192,25 +190,19 @@
             <div class="relative z-10 w-full max-w-md transform overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-2xl transition-all sm:p-8" x-transition:enter="ease-out duration-300 delay-100" x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100">
 
                 @if(session('success'))
-                    <!-- Tampilan Jika Sukses -->
                     <div class="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 ring-1 ring-inset ring-emerald-100">
-                        <svg class="h-10 w-10 text-emerald-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
-                        </svg>
+                        <svg class="h-10 w-10 text-emerald-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
                     </div>
                     <h3 class="mb-2 text-2xl font-bold text-slate-900">Berhasil!</h3>
                     <p class="mb-6 text-base leading-relaxed text-slate-600">{{ session('success') }}</p>
                 @elseif($errors->any())
-                    <!-- Tampilan Jika Gagal/Error -->
                     <div class="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-red-50 ring-1 ring-inset ring-red-100">
-                        <svg class="h-10 w-10 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
+                        <svg class="h-10 w-10 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </div>
-                    <h3 class="mb-3 text-2xl font-bold text-slate-900">Mohon Maaf, Gagal!</h3>
+                    <h3 class="mb-3 text-2xl font-bold text-slate-900">Terdapat Kendala</h3>
                     <div class="mb-6 rounded-xl border border-red-100 bg-red-50 p-4 text-left text-sm leading-relaxed text-red-700">
                         <ul class="list-inside list-disc space-y-1.5">
-                            @foreach($errors->all() as $error)
+                            @foreach(array_unique($errors->all()) as $error)
                                 <li>{{ $error }}</li>
                             @endforeach
                         </ul>
@@ -218,7 +210,7 @@
                 @endif
 
                 <button @click="showAlert = false" class="min-h-[48px] w-full rounded-xl bg-blue-900 px-4 py-3 font-bold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-200">
-                    Tutup Peringatan
+                    Tutup
                 </button>
             </div>
         </div>
@@ -236,7 +228,7 @@
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #94a3b8; border: 2px solid #e2e8f0; border-radius: 9999px; }
     .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
     .dashboard-filter-select {
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m19 9-7 7-7-7'/%3E%3C/svg%3E");
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ffffff' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m19 9-7 7-7-7'/%3E%3C/svg%3E");
         background-position: right 0.7rem center;
         background-repeat: no-repeat;
         background-size: 1rem;

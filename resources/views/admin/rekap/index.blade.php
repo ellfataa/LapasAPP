@@ -20,6 +20,30 @@
                 </div>
             </div>
 
+            <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-200 mb-6">
+                <div class="min-w-0 flex-1">
+                    <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        Pencarian Tabel Rekap PK
+                    </h3>
+                    <p class="text-sm text-slate-500 mt-1">Cari berdasarkan nama PK/Pengawas.</p>
+                </div>
+                <form method="GET" action="{{ route('admin.rekap.index') }}" class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                    <div class="relative flex-1 sm:min-w-[320px]">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                        <input type="text" name="search_pk" value="{{ request('search_pk') }}" placeholder="Ketik nama PK/Pengawas..." class="block min-h-[48px] w-full rounded-xl border-slate-300 pl-11 pr-4 py-3 text-sm shadow-sm transition hover:border-slate-400 focus:border-blue-600 focus:ring-blue-600 text-slate-900 font-medium">
+                    </div>
+                    <div class="flex gap-2">
+                        <button type="submit" class="min-h-[48px] bg-blue-800 hover:bg-blue-900 text-white font-bold px-6 rounded-xl text-sm transition-colors shadow-sm focus:ring-4 focus:ring-blue-200">Cari</button>
+                        @if(request('search_pk'))
+                            <a href="{{ route('admin.rekap.index') }}" class="inline-flex items-center justify-center min-h-[48px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-5 rounded-xl text-sm border border-slate-300 transition-colors focus:ring-4 focus:ring-slate-200" title="Reset Pencarian">Reset</a>
+                        @endif
+                    </div>
+                </form>
+            </div>
+
             <!-- BAGIAN 1: TABEL REKAPAN PK -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col mb-8">
                 <div class="border-b border-slate-200 bg-slate-50 px-6 py-4 flex items-center justify-between">
@@ -51,7 +75,7 @@
                             @empty
                             <tr>
                                 <td colspan="4" class="text-center py-10 text-slate-500 font-medium">
-                                    Belum ada data PK terdaftar.
+                                    Belum ada data PK terdaftar atau cocok dengan pencarian.
                                 </td>
                             </tr>
                             @endforelse
@@ -110,7 +134,7 @@
                             </select>
                         </div>
 
-                        <!-- KOTAK 2: Pilihan Klien (Dengan Alpine JS Pagination) -->
+                        <!-- KOTAK 2: Pilihan Klien -->
                         <div x-data="{
                                 search: '',
                                 selected: [],
@@ -161,7 +185,7 @@
                                 </button>
                             </div>
 
-                            <!-- Daftar Klien (Render via Alpine) -->
+                            <!-- Daftar Klien -->
                             <div class="flex-1 overflow-y-auto custom-scrollbar bg-white rounded-xl border border-emerald-200 shadow-inner p-2">
 
                                 <template x-for="(klien, index) in paginatedClients" :key="klien.id">
@@ -173,11 +197,18 @@
                                             <input type="checkbox" :value="klien.id" x-model="selected" class="w-6 h-6 text-emerald-600 border-slate-300 rounded focus:ring-emerald-600 cursor-pointer shadow-sm">
                                         </div>
 
-                                        <div class="flex flex-col min-w-0">
+                                        <div class="flex flex-col min-w-0 w-full">
                                             <span class="text-sm font-bold text-slate-800 truncate" x-text="( (currentPage - 1) * itemsPerPage + index + 1 ) + '. ' + klien.nama"></span>
-                                            <span class="text-[11px] sm:text-xs mt-0.5 truncate">
+                                            <span class="text-[11px] sm:text-xs mt-0.5 flex flex-wrap items-center gap-2">
                                                 <template x-if="klien.has_pk">
-                                                    <span><span class="text-slate-500 font-medium">Dibimbing oleh: </span><span class="text-indigo-700 font-bold" x-text="klien.pk_nama"></span></span>
+                                                    <span class="flex items-center gap-2">
+                                                        <span><span class="text-slate-500 font-medium">Dibimbing oleh: </span><span class="text-indigo-700 font-bold" x-text="klien.pk_nama"></span></span>
+                                                        <!-- PENAMBAHAN: TOMBOL LEPAS PK -->
+                                                        <form method="POST" :action="`/admin/rekap/lepas/${klien.id}`" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin melepas/membatalkan Klien ini dari PK-nya?');">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                                            <button type="submit" class="bg-red-100 text-red-600 hover:bg-red-200 px-2 py-0.5 rounded text-[10px] font-bold transition-colors shadow-sm">Lepas PK</button>
+                                                        </form>
+                                                    </span>
                                                 </template>
                                                 <template x-if="!klien.has_pk">
                                                     <span class="text-amber-600 font-bold bg-amber-100 px-1.5 py-0.5 rounded">Belum Memiliki PK</span>
@@ -228,15 +259,15 @@
 
         <!-- Pop-up Notifikasi -->
         @if(session('success') || $errors->any())
-        <div x-cloak x-show="showAlert" class="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/65 px-4 backdrop-blur-sm">
+        <div x-cloak x-show="showAlert" class="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/65 px-4 backdrop-blur-sm transition-opacity" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
             <div @click="showAlert = false" class="absolute inset-0 cursor-pointer"></div>
-            <div class="relative z-10 w-full max-w-md rounded-2xl bg-white p-6 sm:p-8 text-center shadow-2xl">
+            <div class="relative z-10 w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 sm:p-8 text-center shadow-2xl transition-all" x-transition:enter="ease-out duration-300 delay-100" x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100">
                 @if(session('success'))
-                    <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-700"><svg class="h-8 w-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg></div>
+                    <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 ring-4 ring-emerald-50"><svg class="h-8 w-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg></div>
                     <h3 class="font-bold text-xl mb-2 text-slate-900">Operasi Berhasil!</h3>
-                    <p class="text-sm text-slate-600 mb-5 leading-relaxed">{{ session('success') }}</p>
+                    <p class="text-sm text-slate-600 mb-6 leading-relaxed">{{ session('success') }}</p>
                 @elseif($errors->any())
-                    <div class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 text-red-600">
+                    <div class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 text-red-600 ring-4 ring-red-50">
                         <svg class="h-8 w-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </div>
                     <h3 class="font-bold text-xl text-slate-900 mb-3">Terjadi Kendala</h3>
@@ -244,7 +275,7 @@
                         @foreach(array_unique($errors->all()) as $error) <li>{{ $error }}</li> @endforeach
                     </ul>
                 @endif
-                <button @click="showAlert = false" class="w-full bg-indigo-900 text-white font-bold py-3 rounded-xl transition-colors hover:bg-indigo-950">Tutup</button>
+                <button @click="showAlert = false" class="w-full bg-slate-800 hover:bg-slate-900 focus:ring-4 focus:ring-slate-200 text-white font-bold py-3.5 text-base rounded-xl transition-colors shadow-sm">Tutup Notifikasi</button>
             </div>
         </div>
         @endif

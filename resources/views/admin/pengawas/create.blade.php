@@ -35,7 +35,7 @@
                         <input type="text" name="nomor_induk" value="{{ old('nomor_induk') }}" required maxlength="50" placeholder="Masukkan Nomor Induk (Huruf/Angka)" class="block min-h-[48px] w-full rounded-xl border-slate-300 px-4 text-sm text-slate-900 shadow-sm transition focus:border-indigo-500 focus:ring-indigo-500">
                     </div>
 
-                    {{-- DIKIRIMKAN KOMENTAR:
+                    {{--
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-2">Email Google <span class="text-slate-400 font-medium">(Opsional)</span></label>
                         <input type="email" name="email" value="{{ old('email') }}" placeholder="contoh: pk@gmail.com" class="block min-h-[48px] w-full rounded-xl border-slate-300 px-4 text-sm text-slate-900 shadow-sm transition focus:border-indigo-500 focus:ring-indigo-500">

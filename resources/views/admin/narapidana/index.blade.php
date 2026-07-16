@@ -1,6 +1,5 @@
 <x-app-layout>
 
-    <!-- Ditambahkan: showImportModal, fileName, fileSelected -->
     <div x-data="{ sidebarOpen: false, showImportModal: false, showAlert: {{ session('success') || $errors->any() ? 'true' : 'false' }}, fileName: '', fileSelected: false }"
          @toggle-admin-sidebar.window="sidebarOpen = !sidebarOpen"
          class="flex min-h-[calc(100vh-73px)] items-stretch bg-slate-100 relative">
@@ -133,7 +132,6 @@
                         </ul>
                     </div>
 
-                    <!-- AREA UPLOAD DINAMIS -->
                     <div class="relative border-2 border-dashed rounded-xl p-6 text-center transition-colors cursor-pointer group"
                          :class="fileSelected ? 'border-emerald-400 bg-emerald-50/50' : 'border-slate-300 bg-slate-50 hover:bg-emerald-50/30 hover:border-emerald-300'">
 
@@ -179,6 +177,7 @@
             </div>
         </div>
 
+        <!-- Modal Peringatan Sistem -->
         @if(session('success') || $errors->any())
         <div x-cloak x-show="showAlert" class="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/65 px-4 backdrop-blur-sm">
             <div @click="showAlert = false" class="absolute inset-0 cursor-pointer"></div>

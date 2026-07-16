@@ -13,8 +13,6 @@ class KinerjaPk extends Model
         'pengawas_id', 'bulan', 'tahun',
         'litmas_kuota', 'litmas_berhasil', 'litmas_file', 'litmas_link',
 
-        // PENDAMPINGAN DIHAPUS
-
         'pembimbingan_kuota', 'pembimbingan_berhasil', 'pembimbingan_detail', 'pembimbingan_file', 'pembimbingan_link',
         'pengawasan_kuota', 'pengawasan_berhasil', 'pengawasan_file', 'pengawasan_link',
         'rata_rata', 'predikat'

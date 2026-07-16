@@ -26,6 +26,35 @@
 
         <div class="min-h-screen bg-slate-100 py-6 sm:py-10">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            @php
+                $backRoute = route('dashboard.narapidana');
+                $backLabel = 'Kembali ke Dashboard';
+
+                if (auth()->check()) {
+                    $role = strtolower((string) auth()->user()->role);
+
+                    if ($role === 'admin') {
+                        $backRoute = route('dashboard.admin');
+                        $backLabel = 'Kembali';
+                    } elseif ($role === 'pengawas' || $role === 'pk') {
+                        $backRoute = route('dashboard.pengawas');
+                        $backLabel = 'Kembali';
+                    } elseif ($role === 'narapidana' || $role === 'klien' || $role === 'client') {
+                        $backLabel = 'Kembali';
+                    }
+                }
+            @endphp
+
+            <!-- Tombol Kembali -->
+            <div class="mb-6 flex items-center">
+                <a href="{{ $backRoute }}" class="group inline-flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-blue-100">
+                    <svg class="h-5 w-5 text-slate-400 transition-colors group-hover:text-blue-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    <span>{{ $backLabel }}</span>
+                </a>
+            </div>
+
             <div class="grid grid-cols-1 gap-6 xl:grid-cols-2 xl:gap-8">
                 <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                     <div class="h-1.5 bg-blue-900"></div>

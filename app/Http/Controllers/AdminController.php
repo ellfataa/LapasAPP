@@ -64,9 +64,7 @@ class AdminController extends Controller
         ));
     }
 
-    // ==========================================
     // MANAJEMEN PK/PENGAWAS
-    // ==========================================
     public function pengawasIndex(Request $request)
     {
         $query = User::where('role', 'pengawas');
@@ -148,9 +146,7 @@ class AdminController extends Controller
     }
 
 
-    // ==========================================
     // MANAJEMEN KLIEN/NARAPIDANA
-    // ==========================================
     public function narapidanaIndex(Request $request)
     {
         $query = User::where('role', 'narapidana');
@@ -252,9 +248,7 @@ class AdminController extends Controller
     }
 
 
-    // ==========================================
     // FUNGSI UMUM UPDATE & DELETE (Berlaku untuk PK & Klien)
-    // ==========================================
     public function updateUser(Request $request, int $id)
     {
         $user = User::findOrFail($id);
@@ -309,9 +303,7 @@ class AdminController extends Controller
         return redirect()->back()->with('success', "Akun atas nama {$namaUser} beserta seluruh berkas miliknya berhasil dihapus bersih.");
     }
 
-    // ==========================================
     // MENU REKAP DATA & PEMETAAN
-    // ==========================================
     public function rekapIndex(Request $request)
     {
         $queryPk = User::where('role', 'pengawas')->withCount('klienBimbingan');
@@ -348,9 +340,7 @@ class AdminController extends Controller
         return redirect()->back()->with('success', "Klien {$klien->nama} berhasil dilepas dari pengawasan PK-nya.");
     }
 
-    // ==========================================
     // MENU PENILAIAN KINERJA & ABSENSI
-    // ==========================================
     public function kinerjaIndex(Request $request)
     {
         $query = KinerjaPk::with('pengawas')->orderBy('tahun', 'desc')->orderBy('bulan', 'desc');

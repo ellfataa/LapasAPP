@@ -7,7 +7,7 @@
                 </svg>
             </div>
             <h2 class="text-xl sm:text-2xl md:text-3xl text-slate-900 leading-tight tracking-tight">
-                Dashboard, Selamat Datang <span class="font-bold">{{ Auth::user()->nama }}</span>!
+                Dashboard, Selamat Datang <span class="font-bold">{{ Auth::user()->nama }}</span>
             </h2>
         </div>
     </x-slot>
@@ -30,7 +30,7 @@
 
                 <div class="p-5 sm:p-7 lg:p-8">
                     @if(empty($pembimbingSaya))
-                        <!-- Peringatan Jika Klien Belum Di-assign PK -->
+                        <!-- Peringatan Jika Klien Belum terhubung dengan PK -->
                         <div class="mb-6 rounded-xl border border-red-200 bg-red-50 p-5 shadow-sm">
                             <div class="flex items-start gap-4">
                                 <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600">
@@ -61,7 +61,6 @@
                                 <div class="md:col-span-2">
                                     <label class="mb-2 block text-sm font-bold text-slate-800 sm:text-base">Penanggung Jawab PK/Pengawas Anda</label>
 
-                                    <!-- Field Read-Only karena PK sudah diatur dari Admin -->
                                     <div class="flex items-center gap-3 min-h-[48px] w-full rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-base shadow-sm">
                                         <svg class="h-6 w-6 text-blue-700 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                         <div class="min-w-0">
@@ -69,7 +68,7 @@
                                             <span class="block text-blue-700 text-xs font-medium truncate">NRP/NIP: {{ $pembimbingSaya->nomor_induk }}</span>
                                         </div>
                                     </div>
-                                    <p class="mt-2 text-xs text-red-500 italic">*Laporan ini akan secara otomatis dikirimkan ke PK/Pengawas Anda.</p>
+                                    <p class="mt-2 text-xs text-red-500 italic">*Absensi ini akan otomatis sinkron di dashboard PK Anda.</p>
                                 </div>
                             </div>
 
@@ -209,7 +208,7 @@
                                 <th scope="col" class="px-6 py-4 text-sm font-bold uppercase tracking-wide text-slate-700">Nama Kegiatan Sosial</th>
                                 <th scope="col" class="w-56 px-6 py-4 text-sm font-bold uppercase tracking-wide text-slate-700">PK/Pengawas</th>
                                 <th scope="col" class="w-36 px-6 py-4 text-center text-sm font-bold uppercase tracking-wide text-slate-700">Bukti Foto</th>
-                                <th scope="col" class="w-36 px-6 py-4 text-center text-sm font-bold uppercase tracking-wide text-slate-700">Pengaturan</th>
+                                <th scope="col" class="w-36 px-6 py-4 text-center text-sm font-bold uppercase tracking-wide text-slate-700">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200 bg-white text-base">
@@ -300,7 +299,7 @@
                 @endif
 
                 <button @click="showAlert = false" class="min-h-[48px] w-full rounded-xl bg-blue-900 px-4 py-3 font-bold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-200">
-                    Tutup Peringatan
+                    Tutup
                 </button>
             </div>
         </div>

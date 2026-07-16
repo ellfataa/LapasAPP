@@ -11,7 +11,7 @@ class AbsensiKegiatan extends Model
 
     protected $fillable = [
         'narapidana_id',
-        'pengawas_id', // TAMBAHAN BARU
+        'pengawas_id',
         'tanggal_waktu',
         'jenis_kegiatan',
         'bukti_file',

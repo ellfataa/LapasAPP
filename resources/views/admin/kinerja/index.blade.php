@@ -35,7 +35,7 @@
                         <input type="text" name="search" value="{{ request('search') }}" placeholder="Ketik nama PK/Pengawas..." class="block min-h-[48px] w-full rounded-xl border-slate-300 pl-11 pr-4 py-3 text-sm shadow-sm transition hover:border-slate-400 focus:border-amber-500 focus:ring-amber-500 text-slate-900 font-medium">
                     </div>
                     <div class="flex gap-2">
-                        <button type="submit" class="min-h-[48px] bg-amber-600 hover:bg-amber-700 text-white font-bold px-6 rounded-xl text-sm transition-colors shadow-sm focus:ring-4 focus:ring-amber-200">Cari Data</button>
+                        <button type="submit" class="min-h-[48px] bg-amber-600 hover:bg-amber-700 text-white font-bold px-6 rounded-xl text-sm transition-colors shadow-sm focus:ring-4 focus:ring-amber-200">Cari</button>
                         @if(request('search'))
                             <a href="{{ route('admin.kinerja.index') }}" class="inline-flex items-center justify-center min-h-[48px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-5 rounded-xl text-sm border border-slate-300 transition-colors focus:ring-4 focus:ring-slate-200">Reset</a>
                         @endif
@@ -45,18 +45,19 @@
 
             <!-- Tabel Data Utama -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col mb-8">
-                <div class="border-b border-slate-200 bg-slate-50 px-6 py-4 flex items-center justify-between">
+                <div class="border-b border-slate-200 bg-slate-50 px-6 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <h3 class="font-bold text-lg text-slate-800">Daftar Seluruh Laporan Kinerja PK</h3>
+                    <span class="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-center text-sm font-semibold text-amber-800">
+                        Geser tabel ke kiri/kanan &rarr;
+                    </span>
                 </div>
 
                 <div class="overflow-x-auto custom-scrollbar flex-1">
-                    <!-- PERBAIKAN: Lebar minimal tabel ditambah menjadi 1100px agar tidak terlalu berdesakan -->
                     <table class="w-full text-left text-slate-700 min-w-[1100px] table-fixed">
                         <thead class="bg-slate-100 border-b border-slate-200 text-xs font-bold uppercase tracking-wide text-slate-600">
                             <tr>
                                 <th class="w-16 px-6 py-4 text-center">No</th>
                                 <th class="w-60 px-6 py-4 border-r border-slate-200">Informasi PK & Periode</th>
-                                <!-- PERBAIKAN: Kolom ini diberi lebar pasti w-[400px] agar 3 kotak di dalamnya tidak tergencet -->
                                 <th class="w-[400px] px-6 py-4 border-r border-slate-200">Rincian Capaian 3 Kategori</th>
                                 <th class="w-44 px-6 py-4 text-center border-r border-slate-200">Skor Akhir & Predikat</th>
                                 <th class="w-32 px-6 py-4 text-center">Aksi</th>
@@ -75,7 +76,7 @@
                                     <!-- Kolom Info PK -->
                                     <td class="px-6 py-5 border-r border-slate-200">
                                         <div class="flex flex-col min-w-0">
-                                            <span class="font-bold text-slate-900 text-base leading-tight truncate" title="{{ $kinerja->pengawas->nama ?? 'Tidak Ditemukan' }}">{{ $kinerja->pengawas->nama ?? 'Tidak Ditemukan' }}</span>
+                                            <span class="font-bold text-slate-900 text-base leading-tight">{{ $kinerja->pengawas->nama ?? 'Tidak Ditemukan' }}</span>
                                             <span class="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5">NIP: {{ $kinerja->pengawas->nomor_induk ?? '-' }}</span>
                                             <span class="inline-flex items-center gap-1.5 mt-3 text-xs font-bold text-amber-800 bg-amber-100 px-2.5 py-1.5 rounded-lg w-fit border border-amber-200">
                                                 <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -86,7 +87,6 @@
 
                                     <!-- Kolom Rincian 3 Kategori (Progress Bar Mini) -->
                                     <td class="px-4 py-5 border-r border-slate-200">
-                                        <!-- PERBAIKAN: gap dikurangi sedikit agar muat -->
                                         <div class="grid grid-cols-3 gap-2 sm:gap-3">
                                             @foreach(['litmas', 'pembimbingan', 'pengawasan'] as $kat)
                                                 @php
@@ -94,11 +94,9 @@
                                                     $lebarProgress = min(max($persenKat, 0), 100);
                                                 @endphp
                                                 <div class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 shadow-sm min-w-0 flex flex-col justify-center">
-                                                    <!-- PERBAIKAN: tracking-wider dan truncate agar teks tidak keluar kotak -->
-                                                    <div class="font-extrabold text-[9px] xl:text-[10px] uppercase tracking-wider text-slate-500 mb-1.5 truncate" title="{{ $kat }}">{{ $kat }}</div>
+                                                    <div class="font-extrabold text-[9px] xl:text-[10px] uppercase tracking-wider text-slate-500 mb-1.5">{{ $kat }}</div>
 
                                                     <div class="flex items-center justify-between gap-1 mb-2 text-xs">
-                                                        <!-- PERBAIKAN: whitespace-nowrap agar 11 / 11 tidak turun baris -->
                                                         <span class="font-bold text-slate-700 whitespace-nowrap">
                                                             {{ $kinerja->{$kat.'_berhasil'} }}<span class="text-slate-400 font-medium">/{{ $kinerja->{$kat.'_kuota'} }}</span>
                                                         </span>

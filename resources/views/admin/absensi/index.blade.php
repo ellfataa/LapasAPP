@@ -25,7 +25,7 @@
                         <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         Pencarian Laporan Klien
                     </h3>
-                    <p class="text-sm text-slate-500 mt-1">Cari berdasarkan nama klien atau jenis kegiatan sosial yang dilakukan.</p>
+                    <p class="text-sm text-slate-500 mt-1">Cari berdasarkan nama klien atau nama kegiatan sosial yang dilakukan.</p>
                 </div>
                 <form method="GET" action="{{ route('admin.absensi.index') }}" class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                     <div class="relative flex-1 sm:min-w-[320px]">
@@ -35,26 +35,31 @@
                         <input type="text" name="search" value="{{ request('search') }}" placeholder="Ketik nama klien atau kegiatan..." class="block min-h-[48px] w-full rounded-xl border-slate-300 pl-11 pr-4 py-3 text-sm shadow-sm transition hover:border-slate-400 focus:border-teal-600 focus:ring-teal-600 text-slate-900 font-medium">
                     </div>
                     <div class="flex gap-2">
-                        <button type="submit" class="min-h-[48px] bg-teal-700 hover:bg-teal-800 text-white font-bold px-6 rounded-xl text-sm transition-colors shadow-sm focus:ring-4 focus:ring-teal-200">Cari Data</button>
+                        <button type="submit" class="min-h-[48px] bg-teal-700 hover:bg-teal-800 text-white font-bold px-6 rounded-xl text-sm transition-colors shadow-sm focus:ring-4 focus:ring-teal-200">Cari</button>
                         @if(request('search'))
-                            <a href="{{ route('admin.absensi.index') }}" class="inline-flex items-center justify-center min-h-[48px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-5 rounded-xl text-sm border border-slate-300 transition-colors focus:ring-4 focus:ring-slate-200">Reset</a>
+                            <a href="{{ route('admin.absensi.index') }}" class="inline-flex items-center justify-center min-h-[48px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-5 rounded-xl text-sm border border-slate-300 transition-colors focus:ring-4 focus:ring-slate-200" title="Reset Pencarian">Reset</a>
                         @endif
                     </div>
                 </form>
             </div>
 
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col mb-8">
-                <div class="border-b border-slate-200 bg-slate-50 px-6 py-4 flex items-center justify-between">
+                <div class="border-b border-slate-200 bg-slate-50 px-6 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <h3 class="font-bold text-lg text-slate-800">Daftar Seluruh Riwayat Absensi</h3>
+                    <span class="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-center text-sm font-semibold text-amber-800">
+                        Geser tabel ke kiri/kanan &rarr;
+                    </span>
                 </div>
 
                 <div class="overflow-x-auto custom-scrollbar flex-1">
-                    <table class="w-full text-left text-slate-700 min-w-[1000px] table-fixed">
+                    <!-- PERBAIKAN: Diperlebar menjadi min-w-[1200px] agar kolom kegiatan punya ruang yang sangat luas -->
+                    <table class="w-full text-left text-slate-700 min-w-[1200px] table-fixed">
                         <thead class="bg-slate-100 border-b border-slate-200 text-xs font-bold uppercase tracking-wide text-slate-600">
                             <tr>
                                 <th class="w-16 px-6 py-4 text-center">No</th>
                                 <th class="w-40 px-6 py-4 border-r border-slate-200">Tanggal</th>
                                 <th class="w-[300px] px-6 py-4 border-r border-slate-200">Informasi Klien & PK</th>
+                                <!-- Kolom ini tidak diberi batasan lebar (width) agar mengambil sisa ruang yang luas -->
                                 <th class="px-6 py-4 border-r border-slate-200">Nama Kegiatan Sosial</th>
                                 <th class="w-36 px-6 py-4 text-center border-r border-slate-200">Bukti Foto</th>
                                 <th class="w-32 px-6 py-4 text-center">Aksi</th>
@@ -94,7 +99,7 @@
                                     </td>
 
                                     <td class="px-6 py-5 border-r border-slate-200">
-                                        <p class="text-sm font-medium text-slate-700 leading-relaxed line-clamp-3" title="{{ $absensi->jenis_kegiatan }}">
+                                        <p class="text-sm font-medium text-slate-700 leading-relaxed break-words">
                                             {{ $absensi->jenis_kegiatan }}
                                         </p>
                                     </td>
@@ -155,7 +160,7 @@
         <div x-cloak x-show="showImageModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/90 px-4 py-6 backdrop-blur-md transition-opacity sm:px-6">
             <div @click="showImageModal = false" class="absolute inset-0 cursor-pointer"></div>
             <div class="relative z-10 flex w-full max-w-4xl flex-col items-center justify-center">
-                <button @click="showImageModal = false" class="mb-4 inline-flex min-h-[44px] items-center justify-center rounded-xl border border-slate-600 bg-slate-800 px-5 py-2.5 font-bold text-white shadow-lg transition hover:bg-slate-700 focus:outline-none focus:ring-4 focus:ring-slate-500">
+                <button @click="showImageModal = false" class="mb-4 inline-flex min-h-[44px] items-center justify-center rounded-xl border border-red-300 bg-red-500 px-5 py-2.5 font-bold text-white shadow-lg transition hover:bg-red-400 focus:outline-none focus:ring-4 focus:ring-slate-500">
                     <svg class="mr-2 h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
                     Tutup Foto
                 </button>
@@ -197,8 +202,8 @@
     .bapas-admin-header { background-color: #f1f5f9; }
     [x-cloak] { display: none !important; }
     .custom-scrollbar { scrollbar-width: thin; scrollbar-color: #cbd5e1 #f8fafc; }
-    .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+    .custom-scrollbar::-webkit-scrollbar { width: 10px; height: 10px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: #f8fafc; border-radius: 9999px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; border: 2px solid #f8fafc; }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 9999px; border: 2px solid #f8fafc; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
 </style>

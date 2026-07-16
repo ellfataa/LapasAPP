@@ -106,7 +106,7 @@
             </div>
         </main>
 
-        <!-- MODAL IMPORT YANG DIPERBARUI -->
+        {{-- MODAL IMPORT EXCEL PENGAWAS --}}
         <div x-cloak x-show="showImportModal" class="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/70 backdrop-blur-sm px-4">
             <div @click="showImportModal = false" class="absolute inset-0 cursor-pointer"></div>
             <div class="relative z-10 w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden transform transition-all">
@@ -132,7 +132,6 @@
                         </ul>
                     </div>
 
-                    <!-- AREA UPLOAD DINAMIS -->
                     <div class="relative border-2 border-dashed rounded-xl p-6 text-center transition-colors cursor-pointer group"
                          :class="fileSelected ? 'border-emerald-400 bg-emerald-50/50' : 'border-slate-300 bg-slate-50 hover:bg-emerald-50/30 hover:border-emerald-300'">
 
@@ -169,7 +168,6 @@
                     <div class="pt-2 flex flex-col sm:flex-row justify-end gap-3 border-t border-slate-100 mt-2">
                         <button type="button" @click="showImportModal = false" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold hover:bg-slate-200 transition-colors">Batal</button>
 
-                        <!-- Tombol Submit akan berganti warna jika file sudah dipilih -->
                         <button type="submit"
                                 class="w-full sm:w-auto px-5 py-2.5 rounded-xl text-white font-bold transition-all shadow-md focus:ring-4 focus:ring-emerald-200"
                                 :class="fileSelected ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-slate-400 cursor-not-allowed hover:bg-slate-400 opacity-70'"
