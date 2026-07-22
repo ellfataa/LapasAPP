@@ -34,7 +34,29 @@
                         </svg>
                     </div>
 
-                    <h2 class="mt-4 text-3xl font-extrabold tracking-tight text-slate-900">Registrasi</h2>
+                    <div class="mt-4 flex items-center justify-between gap-4">
+                        <h2 class="text-3xl font-extrabold tracking-tight text-slate-900">
+                            Registrasi
+                        </h2>
+
+                        <a
+                            href="{{ url('/') }}"
+                            class="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                            aria-label="Kembali ke halaman utama"
+                        >
+                            <svg
+                                class="h-4 w-4"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                            >
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                            </svg>
+                            Kembali
+                        </a>
+                    </div>
                     <p class="mt-2 text-sm font-medium leading-relaxed text-slate-500">Buat akun untuk mengakses sistem.</p>
                 </div>
 

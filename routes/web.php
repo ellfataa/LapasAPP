@@ -6,22 +6,72 @@ use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\KinerjaPkController;
 use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Auth;
-// use App\Http\Controllers\Auth\GoogleAuthController; //Nonaktifkan sementara
+use App\Models\User;
+use App\Models\AbsensiKegiatan;
+use App\Models\KinerjaPk;
 
-// 1. RUTE UTAMA: Otomatis arahkan sesuai status login
+// 1. LANDING PAGE (HALAMAN DEPAN UTAMA)
 Route::get('/', function () {
-    if (Auth::check()) {
-        return redirect()->route('dashboard');
-    }
-    return redirect('/login');
-});
+    $currentSystemYear  = date('Y');
+    $currentSystemMonth = date('m');
 
-// Route Google Auth (SEMENTARA DINONAKTIFKAN)
-// Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])->name('google.login');
-// Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
+    // STATISTIK UMUM (disamakan dengan AdminController@index)
+    $totalPengawas   = User::where('role', 'pengawas')->count();
+    $totalNarapidana = User::where('role', 'narapidana')->count();
+
+    $totalKinerja = KinerjaPk::where('bulan', (int) $currentSystemMonth)
+                              ->where('tahun', $currentSystemYear)
+                              ->count();
+
+    // --- FETCH DATA STATISTIK LANGSUNG DARI GOOGLE SHEETS (sama seperti AdminController) ---
+    $klienBekerja      = 0;
+    $klienBelumBekerja = 0;
+    $persenBekerja     = '0%';
+
+    $klienSudahApel = 0;
+    $klienBelumApel = 0;
+    $persenApel     = '0%';
+
+    try {
+        $client = new \Google\Client();
+        $client->setAuthConfig(storage_path('app/google-credentials.json'));
+        $client->setScopes([\Google\Service\Sheets::SPREADSHEETS_READONLY]);
+        $service = new \Google\Service\Sheets($client);
+
+        $spreadsheetId = '1dMWij_J6P_lvC0H2x19DFpqCSjAMDFsCdeT_H1S61HE';
+
+        // 1. Data Status Bekerja (F42:G43)
+        $resBekerja = $service->spreadsheets_values->get($spreadsheetId, "'Rekap Data'!F42:G43");
+        $valBekerja = $resBekerja->getValues();
+        if (!empty($valBekerja)) {
+            $klienBekerja      = $valBekerja[0][0] ?? 0;
+            $klienBelumBekerja = $valBekerja[0][1] ?? 0;
+            $persenBekerja     = $valBekerja[1][0] ?? '0%';
+        }
+
+        // 2. Data Apel Tahunan (J45:J47)
+        $resApel = $service->spreadsheets_values->get($spreadsheetId, "'Rekap Data'!J45:J47");
+        $valApel = $resApel->getValues();
+        if (!empty($valApel)) {
+            $klienSudahApel = $valApel[0][0] ?? 0;
+            $klienBelumApel = $valApel[1][0] ?? 0;
+            $persenApel     = $valApel[2][0] ?? '0%';
+        }
+    } catch (\Exception $e) {
+        \Illuminate\Support\Facades\Log::error('Gagal fetch statistik welcome page dari Sheets: ' . $e->getMessage());
+    }
+
+    return view('welcome', compact(
+        'totalPengawas', 'totalNarapidana', 'totalKinerja',
+        'klienBekerja', 'klienBelumBekerja', 'persenBekerja',
+        'klienSudahApel', 'klienBelumApel', 'persenApel'
+    ));
+});
 
 // Grup Route yang butuh Login
 Route::middleware('auth')->group(function () {
+
+    // RUTE TERMINAL (Solusi agar sistem Laravel tidak bingung)
     Route::get('/dashboard', function () {
         $role = Auth::user()->role;
         if ($role === 'admin') return redirect()->route('dashboard.admin');
@@ -29,7 +79,6 @@ Route::middleware('auth')->group(function () {
         return redirect()->route('dashboard.narapidana');
     })->name('dashboard');
 
-    // ====================================================================
     // 1. ROUTE KHUSUS ADMIN
     Route::middleware('role:admin')->group(function () {
         Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('dashboard.admin');
@@ -55,6 +104,9 @@ Route::middleware('auth')->group(function () {
 
         // Manajemen Halaman Lain (Kinerja, Absensi)
         Route::get('/admin/kinerja', [AdminController::class, 'kinerjaIndex'])->name('admin.kinerja.index');
+        // --- ROUTE CETAK PDF ---
+        Route::get('/admin/kinerja/cetak-pdf', [AdminController::class, 'cetakKinerjaPdf'])->name('admin.kinerja.cetak_pdf');
+
         Route::get('/admin/absensi', [AdminController::class, 'absensiIndex'])->name('admin.absensi.index');
 
         // Manajemen Pengguna secara umum (Aksi Update & Delete)
@@ -65,7 +117,6 @@ Route::middleware('auth')->group(function () {
         Route::delete('/admin/absensi/{id}', [AdminController::class, 'destroyAbsensi'])->name('admin.absensi.destroy');
     });
 
-    // ====================================================================
     // 2. ROUTE KHUSUS PK/PENGAWAS
     Route::middleware('role:pengawas')->group(function () {
         Route::get('/pengawas/dashboard', [AbsensiController::class, 'indexPengawas'])->name('dashboard.pengawas');
@@ -75,7 +126,6 @@ Route::middleware('auth')->group(function () {
         Route::post('/pengawas/save-draft', [AbsensiController::class, 'saveDraftPk'])->name('pengawas.save_draft');
     });
 
-    // ====================================================================
     // 3. ROUTE KHUSUS KLIEN/NARAPIDANA
     Route::middleware('role:narapidana')->group(function () {
         Route::get('/narapidana/dashboard', [AbsensiController::class, 'indexNarapidana'])->name('dashboard.narapidana');
@@ -85,7 +135,6 @@ Route::middleware('auth')->group(function () {
         Route::put('/narapidana/absensi/{id}', [AbsensiController::class, 'update'])->name('absensi.update');
     });
 
-    // ====================================================================
     // ROUTE PROFILE
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

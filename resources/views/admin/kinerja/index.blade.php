@@ -19,28 +19,39 @@
                 </div>
             </div>
 
+            <!-- PERUBAHAN: Menambahkan blok Flex Wrap agar tombol Cetak PDF dapat diletakkan dengan rapi -->
             <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-200 mb-8">
                 <div class="min-w-0 flex-1">
                     <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
                         <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
-                        Filter Data Kinerja
+                        Filter & Ekspor Data
                     </h3>
-                    <p class="text-sm text-slate-500 mt-1">Gunakan kotak di bawah untuk mencari berdasarkan nama PK.</p>
+                    <p class="text-sm text-slate-500 mt-1">Cari data berdasarkan nama PK atau cetak hasil penilaian ke bentuk PDF.</p>
                 </div>
-                <form method="GET" action="{{ route('admin.kinerja.index') }}" class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                    <div class="relative flex-1 sm:min-w-[300px]">
-                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <svg class="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+
+                <div class="flex flex-col sm:flex-row flex-wrap gap-3 items-center w-full xl:w-auto">
+                    <!-- Form Filter Pencarian -->
+                    <form method="GET" action="{{ route('admin.kinerja.index') }}" class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                        <div class="relative flex-1 sm:min-w-[300px]">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            </div>
+                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Ketik nama PK/Pengawas..." class="block min-h-[48px] w-full rounded-xl border-slate-300 pl-11 pr-4 py-3 text-sm shadow-sm transition hover:border-slate-400 focus:border-amber-500 focus:ring-amber-500 text-slate-900 font-medium">
                         </div>
-                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Ketik nama PK/Pengawas..." class="block min-h-[48px] w-full rounded-xl border-slate-300 pl-11 pr-4 py-3 text-sm shadow-sm transition hover:border-slate-400 focus:border-amber-500 focus:ring-amber-500 text-slate-900 font-medium">
-                    </div>
-                    <div class="flex gap-2">
-                        <button type="submit" class="min-h-[48px] bg-amber-600 hover:bg-amber-700 text-white font-bold px-6 rounded-xl text-sm transition-colors shadow-sm focus:ring-4 focus:ring-amber-200">Cari</button>
-                        @if(request('search'))
-                            <a href="{{ route('admin.kinerja.index') }}" class="inline-flex items-center justify-center min-h-[48px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-5 rounded-xl text-sm border border-slate-300 transition-colors focus:ring-4 focus:ring-slate-200">Reset</a>
-                        @endif
-                    </div>
-                </form>
+                        <div class="flex gap-2 w-full sm:w-auto">
+                            <button type="submit" class="min-h-[48px] w-full sm:w-auto flex-1 sm:flex-none bg-slate-800 hover:bg-slate-900 text-white font-bold px-6 rounded-xl text-sm transition-colors shadow-sm focus:ring-4 focus:ring-slate-200">Cari</button>
+                            @if(request('search'))
+                                <a href="{{ route('admin.kinerja.index') }}" class="inline-flex items-center justify-center min-h-[48px] px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm border border-slate-300 transition-colors focus:ring-4 focus:ring-slate-200">Reset</a>
+                            @endif
+                        </div>
+                    </form>
+
+                    <!-- Tombol Cetak PDF -->
+                    <a href="{{ route('admin.kinerja.cetak_pdf', ['search' => request('search')]) }}" class="inline-flex items-center justify-center min-h-[48px] w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white font-bold px-6 rounded-xl text-sm transition-colors shadow-sm focus:ring-4 focus:ring-amber-200">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        Cetak Laporan PDF
+                    </a>
+                </div>
             </div>
 
             <!-- Tabel Data Utama -->

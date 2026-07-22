@@ -9,27 +9,72 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use Barryvdh\DomPDF\Facade\Pdf; // Pastikan package ini sudah diinstall
 
 class AdminController extends Controller
 {
     public function index(Request $request)
     {
-        $totalPengawas = User::where('role', 'pengawas')->count();
-        $totalNarapidana = User::where('role', 'narapidana')->count();
-        $totalAbsensi = AbsensiKegiatan::count();
-        $totalKinerja = KinerjaPk::count();
-
         // Variabel Default (Bulan & Tahun Saat Ini)
         $currentSystemYear = date('Y');
         $currentSystemMonth = date('m');
 
-        // Tangkap Parameter Filter Kinerja (atau gunakan default)
+        // STATISTIK UMUM
+        $totalPengawas = User::where('role', 'pengawas')->count();
+        $totalNarapidana = User::where('role', 'narapidana')->count();
+
+        // Dihitung berdasarkan bulan berjalan
+        $totalAbsensi = AbsensiKegiatan::whereMonth('tanggal_waktu', $currentSystemMonth)
+                                       ->whereYear('tanggal_waktu', $currentSystemYear)
+                                       ->count();
+
+        $totalKinerja = KinerjaPk::where('bulan', (int)$currentSystemMonth)
+                                 ->where('tahun', $currentSystemYear)
+                                 ->count();
+
+        // Tangkap Parameter Filter (atau gunakan default)
         $kinerjaYear = $request->input('kinerja_year', $currentSystemYear);
         $kinerjaMonth = $request->input('kinerja_month', $currentSystemMonth);
-
-        // Tangkap Parameter Filter Absensi (atau gunakan default)
         $absensiYear = $request->input('absensi_year', $currentSystemYear);
         $absensiMonth = $request->input('absensi_month', $currentSystemMonth);
+
+        // --- FETCH DATA STATISTIK LANGSUNG DARI GOOGLE SHEETS ---
+        $klienBekerja = 0;
+        $klienBelumBekerja = 0;
+        $persenBekerja = '0%';
+
+        $klienSudahApel = 0;
+        $klienBelumApel = 0;
+        $persenApel = '0%';
+
+        try {
+            $client = new \Google\Client();
+            $client->setAuthConfig(storage_path('app/google-credentials.json'));
+            $client->setScopes([\Google\Service\Sheets::SPREADSHEETS_READONLY]);
+            $service = new \Google\Service\Sheets($client);
+
+            $spreadsheetId = '1dMWij_J6P_lvC0H2x19DFpqCSjAMDFsCdeT_H1S61HE';
+
+            // 1. Fetch Data Status Bekerja (F42:G43)
+            $resBekerja = $service->spreadsheets_values->get($spreadsheetId, "'Rekap Data'!F42:G43");
+            $valBekerja = $resBekerja->getValues();
+            if (!empty($valBekerja)) {
+                $klienBekerja = $valBekerja[0][0] ?? 0;
+                $klienBelumBekerja = $valBekerja[0][1] ?? 0;
+                $persenBekerja = $valBekerja[1][0] ?? '0%'; // Cell F43
+            }
+
+            // 2. Fetch Data Apel Tahunan (J45:J47)
+            $resApel = $service->spreadsheets_values->get($spreadsheetId, "'Rekap Data'!J45:J47");
+            $valApel = $resApel->getValues();
+            if (!empty($valApel)) {
+                $klienSudahApel = $valApel[0][0] ?? 0; // Cell J45
+                $klienBelumApel = $valApel[1][0] ?? 0; // Cell J46
+                $persenApel = $valApel[2][0] ?? '0%';  // Cell J47
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Gagal fetch statistik dashboard Admin dari Sheets: ' . $e->getMessage());
+        }
 
         // Ambil Daftar Tahun yang Tersedia untuk Dropdown
         $availableYearsAbsensi = AbsensiKegiatan::selectRaw('YEAR(tanggal_waktu) as year')
@@ -41,7 +86,7 @@ class AdminController extends Controller
         $availableYears = array_unique(array_merge($availableYearsAbsensi, $availableYearsKinerja, [$currentSystemYear]));
         rsort($availableYears);
 
-        // 1. Ambil 5 Laporan Kinerja PK Terbaru (Berdasarkan Filter Kinerja)
+        // Ambil 5 Laporan Terbaru
         $ringkasanKinerja = KinerjaPk::with('pengawas')
             ->where('tahun', $kinerjaYear)
             ->where('bulan', (int)$kinerjaMonth)
@@ -49,7 +94,6 @@ class AdminController extends Controller
             ->take(5)
             ->get();
 
-        // 2. Ambil 5 Laporan Absensi Terbaru (Berdasarkan Filter Absensi)
         $ringkasanAbsensi = AbsensiKegiatan::with(['narapidana', 'pengawas'])
             ->whereYear('tanggal_waktu', $absensiYear)
             ->whereMonth('tanggal_waktu', $absensiMonth)
@@ -59,6 +103,8 @@ class AdminController extends Controller
 
         return view('dashboard.admin', compact(
             'totalPengawas', 'totalNarapidana', 'totalAbsensi', 'totalKinerja',
+            'klienBekerja', 'klienBelumBekerja', 'persenBekerja',
+            'klienSudahApel', 'klienBelumApel', 'persenApel',
             'ringkasanKinerja', 'ringkasanAbsensi',
             'availableYears', 'kinerjaYear', 'kinerjaMonth', 'absensiYear', 'absensiMonth'
         ));
@@ -368,6 +414,33 @@ class AdminController extends Controller
         }
         $kinerja->delete();
         return redirect()->back()->with('success', 'Data penilaian kinerja PK berhasil dihapus beserta lampiran terkait.');
+    }
+
+    // FUNGSI UNTUK MENCETAK PDF KINERJA PK
+    public function cetakKinerjaPdf(Request $request)
+    {
+        // 1. Ambil data dengan filter yang sama dengan tampilan halaman
+        $query = KinerjaPk::with('pengawas')->orderBy('tahun', 'desc')->orderBy('bulan', 'desc');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('pengawas', function($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%");
+            });
+        }
+
+        $semuaKinerja = $query->get();
+
+        $searchKeyword = $request->filled('search') ? $request->search : 'Semua Data';
+
+        // 2. Load View PDF
+        $pdf = Pdf::loadView('admin.kinerja.pdf', [
+            'semuaKinerja' => $semuaKinerja,
+            'searchKeyword' => $searchKeyword
+        ])->setPaper('a4', 'landscape'); // Format landscape karena kolomnya lumayan panjang
+
+        // 3. Kembalikan output untuk didownload
+        return $pdf->download('Laporan_Penilaian_Kinerja_PK_' . date('Ymd_His') . '.pdf');
     }
 
     public function absensiIndex(Request $request)
