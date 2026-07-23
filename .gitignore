@@ -25,3 +25,6 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+# Pengecualian khusus folder unggahan agar tidak dihapus/ditimpa oleh hosting
+/storage/app/public/*
+!/storage/app/public/.gitignore
