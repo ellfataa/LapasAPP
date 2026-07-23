@@ -36,7 +36,7 @@
                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                 <svg class="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                             </div>
-                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Ketik nama PK/Pengawas..." class="block min-h-[48px] w-full rounded-xl border-slate-300 pl-11 pr-4 py-3 text-sm shadow-sm transition hover:border-slate-400 focus:border-amber-500 focus:ring-amber-500 text-slate-900 font-medium">
+                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Ketik nama PK/Pembimbing..." class="block min-h-[48px] w-full rounded-xl border-slate-300 pl-11 pr-4 py-3 text-sm shadow-sm transition hover:border-slate-400 focus:border-amber-500 focus:ring-amber-500 text-slate-900 font-medium">
                         </div>
                         <div class="flex gap-2 w-full sm:w-auto">
                             <button type="submit" class="min-h-[48px] w-full sm:w-auto flex-1 sm:flex-none bg-slate-800 hover:bg-slate-900 text-white font-bold px-6 rounded-xl text-sm transition-colors shadow-sm focus:ring-4 focus:ring-slate-200">Cari</button>
@@ -88,7 +88,7 @@
                                     <td class="px-6 py-5 border-r border-slate-200">
                                         <div class="flex flex-col min-w-0">
                                             <span class="font-bold text-slate-900 text-base leading-tight">{{ $kinerja->pengawas->nama ?? 'Tidak Ditemukan' }}</span>
-                                            <span class="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5">NIP: {{ $kinerja->pengawas->nomor_induk ?? '-' }}</span>
+                                            <span class="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5">NRP/NIP: {{ $kinerja->pengawas->nomor_induk ?? '-' }}</span>
                                             <span class="inline-flex items-center gap-1.5 mt-3 text-xs font-bold text-amber-800 bg-amber-100 px-2.5 py-1.5 rounded-lg w-fit border border-amber-200">
                                                 <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                                                 {{ $namaBulan[$kinerja->bulan - 1] ?? $kinerja->bulan }} {{ $kinerja->tahun }}

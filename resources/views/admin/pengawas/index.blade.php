@@ -16,14 +16,14 @@
                         </svg>
                     </div>
                     <h2 class="font-bold text-xl sm:text-2xl md:text-3xl text-slate-900 leading-tight tracking-tight">
-                        Manajemen Akun PK/Pengawas
+                        Manajemen Akun PK/Pembimbing
                     </h2>
                 </div>
 
                 <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200">
                     <div class="min-w-0 flex-1">
                         <h3 class="font-bold text-lg sm:text-xl text-slate-800 break-words">Tambah Data</h3>
-                        <p class="text-sm text-slate-500 mt-1 leading-relaxed">Kelola data PK/Pengawas dengan tambah manual atau import via berkas Excel/CSV.</p>
+                        <p class="text-sm text-slate-500 mt-1 leading-relaxed">Kelola data PK dengan tambah manual atau import via berkas Excel/CSV.</p>
                     </div>
                     <div class="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 w-full sm:w-auto xl:justify-end">
                         <button @click="showImportModal = true; fileSelected = false; fileName = ''" class="w-full sm:w-auto min-h-[44px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 sm:px-5 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-sm">
@@ -87,7 +87,7 @@
                                         @if(request('search'))
                                             Tidak ditemukan data PK pembimbing dengan kata kunci "{{ request('search') }}".
                                         @else
-                                            Belum ada akun Pengawas/PK yang terdaftar di dalam database.
+                                            Belum ada akun PK yang terdaftar di dalam database.
                                         @endif
                                     </td>
                                 </tr>

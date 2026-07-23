@@ -29,7 +29,7 @@
                         <img src="{{ asset('images/bapaspwt.webp') }}" alt="Logo BAPAS Purwokerto" class="h-full w-full object-contain">
                     </div>
                     <div>
-                        <h1 class="text-xl font-extrabold text-slate-900 tracking-tight leading-none">SIBAPAS PWT</h1>
+                        <h1 class="text-xl font-extrabold text-slate-900 tracking-tight leading-none">BAPAS PWT</h1>
                         <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mt-0.5">Balai Pemasyarakatan Purwokerto</p>
                     </div>
                 </div>
@@ -89,7 +89,7 @@
                     <div class="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-300 mb-2">
                         <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                     </div>
-                    <p class="text-[10px] sm:text-xs font-bold text-blue-200 uppercase tracking-widest mb-0.5">Sudah Bekerja</p>
+                    <p class="text-[10px] sm:text-xs font-bold text-blue-200 uppercase tracking-widest mb-0.5">Klien Sudah Bekerja</p>
                     <div class="flex items-baseline gap-1.5 justify-center">
                         <p class="text-2xl sm:text-3xl font-black text-white">{{ $klienBekerja }}</p>
                         <span class="text-[10px] font-bold bg-emerald-400/20 text-emerald-200 px-1.5 py-0.5 rounded ring-1 ring-emerald-300/30">{{ $persenBekerja }}</span>
@@ -100,7 +100,7 @@
                     <div class="flex h-11 w-11 items-center justify-center rounded-full bg-red-500/20 text-red-300 mb-2">
                         <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </div>
-                    <p class="text-[10px] sm:text-xs font-bold text-blue-200 uppercase tracking-widest mb-0.5">Belum Bekerja</p>
+                    <p class="text-[10px] sm:text-xs font-bold text-blue-200 uppercase tracking-widest mb-0.5">Klien Belum Bekerja</p>
                     <p class="text-2xl sm:text-3xl font-black text-white">{{ $klienBelumBekerja }}</p>
                 </div>
 
@@ -108,7 +108,7 @@
                     <div class="flex h-11 w-11 items-center justify-center rounded-full bg-blue-500/20 text-blue-300 mb-2">
                         <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </div>
-                    <p class="text-[10px] sm:text-xs font-bold text-blue-200 uppercase tracking-widest mb-0.5">Sudah Apel (Per Tahun)</p>
+                    <p class="text-[10px] sm:text-xs font-bold text-blue-200 uppercase tracking-widest mb-0.5">Klien Sudah Apel (Per Tahun)</p>
                     <div class="flex items-baseline gap-1.5 justify-center">
                         <p class="text-2xl sm:text-3xl font-black text-white">{{ $klienSudahApel }}</p>
                         <span class="text-[10px] font-bold bg-blue-400/20 text-blue-200 px-1.5 py-0.5 rounded ring-1 ring-blue-300/30">{{ $persenApel }}</span>
@@ -119,7 +119,7 @@
                     <div class="flex h-11 w-11 items-center justify-center rounded-full bg-orange-500/20 text-orange-300 mb-2">
                         <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </div>
-                    <p class="text-[10px] sm:text-xs font-bold text-blue-200 uppercase tracking-widest mb-0.5">Belum Apel (Per Tahun)</p>
+                    <p class="text-[10px] sm:text-xs font-bold text-blue-200 uppercase tracking-widest mb-0.5">Klien Belum Apel (Per Tahun)</p>
                     <p class="text-2xl sm:text-3xl font-black text-white">{{ $klienBelumApel }}</p>
                 </div>
             </div>
@@ -129,7 +129,7 @@
                 SiBapas Purwokerto
             </h2>
             <p class="max-w-2xl mx-auto text-base md:text-lg text-blue-100 mb-10 leading-relaxed font-medium">
-                Pusat informasi dan pengelolaan laporan kegiatan klien secara terpadu. Memudahkan Pengawas Kemasyarakatan (PK) dalam memantau klien.
+                Pusat informasi dan pengelolaan laporan kegiatan klien secara terpadu. Memudahkan Pembimbing Kemasyarakatan (PK) dalam memantau klien.
             </p>
             @if(!Auth::check())
                 <a href="{{ route('login') }}" class="inline-flex items-center justify-center px-10 py-4 rounded-xl font-extrabold text-base bg-blue-500 text-white hover:bg-blue-600 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 focus:ring-4 focus:ring-blue-300/50">

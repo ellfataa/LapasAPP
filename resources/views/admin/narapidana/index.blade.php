@@ -21,7 +21,7 @@
                 <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200">
                     <div class="min-w-0 flex-1">
                         <h3 class="font-bold text-lg sm:text-xl text-slate-800 break-words">Tambah Data</h3>
-                        <p class="text-sm text-slate-500 mt-1 leading-relaxed">Kelola data Klien/Narapidana dengan tambah manual atau import via berkas Excel/CSV.</p>
+                        <p class="text-sm text-slate-500 mt-1 leading-relaxed">Kelola data Klien dengan tambah manual atau import via berkas Excel/CSV.</p>
                     </div>
 
                     <div class="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 w-full sm:w-auto xl:justify-end">
@@ -86,7 +86,7 @@
                                         @if(request('search'))
                                             Tidak ditemukan data Klien dengan kata kunci "{{ request('search') }}".
                                         @else
-                                            Belum ada akun Klien/Narapidana yang terdaftar di dalam database.
+                                            Belum ada akun Klien yang terdaftar di dalam database.
                                         @endif
                                     </td>
                                 </tr>

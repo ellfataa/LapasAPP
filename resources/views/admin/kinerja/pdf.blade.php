@@ -23,7 +23,7 @@
 <body>
 
     <div class="header">
-        <h1>REKAPITULASI PENILAIAN KINERJA PENGAWAS KEMASYARAKATAN (PK)</h1>
+        <h1>REKAPITULASI PENILAIAN KINERJA PEMBIMBING KEMASYARAKATAN (PK)</h1>
         <p>Balai Pemasyarakatan (BAPAS) Purwokerto</p>
     </div>
 

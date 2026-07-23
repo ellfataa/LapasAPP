@@ -38,7 +38,7 @@
                                 </span>
                                 <div>
                                     <h4 class="text-base font-bold text-red-800">Anda Belum Memiliki PK Pembimbing!</h4>
-                                    <p class="mt-1 text-sm text-red-700 leading-relaxed">Admin belum menetapkan Pengawas Kemasyarakatan (PK) untuk Anda. Anda tidak dapat melakukan laporan absen wajib sebelum Admin menghubungkan akun Anda dengan PK. Silakan hubungi Admin Bapas.</p>
+                                    <p class="mt-1 text-sm text-red-700 leading-relaxed">Admin belum menetapkan Pembimbing Kemasyarakatan (PK) untuk Anda. Anda tidak dapat melakukan laporan absen wajib sebelum Admin menghubungkan akun Anda dengan PK. Silakan hubungi Admin Bapas.</p>
                                 </div>
                             </div>
                         </div>
@@ -59,7 +59,7 @@
                                 </div>
 
                                 <div class="md:col-span-2">
-                                    <label class="mb-2 block text-sm font-bold text-slate-800 sm:text-base">Penanggung Jawab PK/Pengawas Anda</label>
+                                    <label class="mb-2 block text-sm font-bold text-slate-800 sm:text-base">Penanggung Jawab PK/Pembimbing Anda</label>
 
                                     <div class="flex items-center gap-3 min-h-[48px] w-full rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-base shadow-sm">
                                         <svg class="h-6 w-6 text-blue-700 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -206,7 +206,7 @@
                             <tr>
                                 <th scope="col" class="w-40 px-6 py-4 text-sm font-bold uppercase tracking-wide text-slate-700">Tanggal</th>
                                 <th scope="col" class="px-6 py-4 text-sm font-bold uppercase tracking-wide text-slate-700">Nama Kegiatan Sosial</th>
-                                <th scope="col" class="w-56 px-6 py-4 text-sm font-bold uppercase tracking-wide text-slate-700">PK/Pengawas</th>
+                                <th scope="col" class="w-56 px-6 py-4 text-sm font-bold uppercase tracking-wide text-slate-700">PK/Pembimbing</th>
                                 <th scope="col" class="w-36 px-6 py-4 text-center text-sm font-bold uppercase tracking-wide text-slate-700">Bukti Foto</th>
                                 <th scope="col" class="w-36 px-6 py-4 text-center text-sm font-bold uppercase tracking-wide text-slate-700">Aksi</th>
                             </tr>

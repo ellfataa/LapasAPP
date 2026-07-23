@@ -63,9 +63,9 @@
                                 <input id="jenis_kegiatan" name="jenis_kegiatan" type="text" class="block min-h-[48px] w-full rounded-xl border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm transition hover:border-slate-400 focus:border-blue-700 focus:ring-blue-700" required value="{{ old('jenis_kegiatan', $absensi->jenis_kegiatan) }}" />
                             </div>
 
-                            <!-- Info PK/Pengawas -->
+                            <!-- Info PK/Pengawas/Pembimbing -->
                             <div class="md:col-span-2">
-                                <label class="mb-2 block text-sm font-bold text-slate-800 sm:text-base">Penanggung Jawab PK/Pengawas Anda</label>
+                                <label class="mb-2 block text-sm font-bold text-slate-800 sm:text-base">Penanggung Jawab PK/Pembimbing Anda</label>
 
                                 <div class="flex items-center gap-3 min-h-[48px] w-full rounded-xl border border-blue-100 bg-blue-50/50 px-4 py-3 text-base shadow-sm">
                                     <svg class="h-6 w-6 text-blue-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>

@@ -14,7 +14,7 @@
                     </svg>
                 </div>
                 <h2 class="font-bold text-xl sm:text-2xl md:text-3xl text-slate-900 leading-tight tracking-tight">
-                    Tambah Akun PK/Pengawas
+                    Tambah Akun PK/Pembimbing
                 </h2>
             </div>
 
@@ -48,7 +48,7 @@
                     </div>
 
                     <div class="pt-6 mt-6 flex items-center justify-end gap-4 border-t border-slate-100">
-                        <a href="{{ route('admin.pengawas.index') }}" class="inline-flex min-h-[48px] items-center justify-center px-6 rounded-xl bg-red-500 font-bold text-sm text-white hover:bg-red-300 transition-colors">Batal & Kembali</a>
+                        <a href="{{ route('admin.pengawas.index') }}" class="inline-flex min-h-[48px] items-center justify-center px-6 rounded-xl bg-red-500 font-bold text-sm text-white hover:bg-red-300 transition-colors">Batal</a>
                         <button type="submit" class="inline-flex min-h-[48px] items-center justify-center px-8 rounded-xl bg-green-700 text-white font-bold text-sm hover:bg-green-800 transition-colors shadow-md">Daftarkan PK</button>
                     </div>
                 </form>

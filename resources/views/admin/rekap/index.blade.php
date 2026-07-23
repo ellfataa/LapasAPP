@@ -16,7 +16,7 @@
                     <h2 class="font-bold text-xl sm:text-2xl md:text-3xl text-slate-900 leading-tight tracking-tight">
                         Rekap Data & Distribusi Klien
                     </h2>
-                    <p class="text-sm text-slate-500 mt-1">Pantau jumlah klien masing-masing PK dan hubungkan klien ke PK/Pengawas.</p>
+                    <p class="text-sm text-slate-500 mt-1">Pantau jumlah klien masing-masing PK dan hubungkan klien ke PK/Pembimbing.</p>
                 </div>
             </div>
 
@@ -26,14 +26,14 @@
                         <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         Pencarian Tabel Rekap PK
                     </h3>
-                    <p class="text-sm text-slate-500 mt-1">Cari berdasarkan nama PK/Pengawas.</p>
+                    <p class="text-sm text-slate-500 mt-1">Cari berdasarkan nama PK/Pembimbing.</p>
                 </div>
                 <form method="GET" action="{{ route('admin.rekap.index') }}" class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                     <div class="relative flex-1 sm:min-w-[320px]">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <svg class="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         </div>
-                        <input type="text" name="search_pk" value="{{ request('search_pk') }}" placeholder="Ketik nama PK/Pengawas..." class="block min-h-[48px] w-full rounded-xl border-slate-300 pl-11 pr-4 py-3 text-sm shadow-sm transition hover:border-slate-400 focus:border-blue-600 focus:ring-blue-600 text-slate-900 font-medium">
+                        <input type="text" name="search_pk" value="{{ request('search_pk') }}" placeholder="Ketik nama PK/Pembimbing..." class="block min-h-[48px] w-full rounded-xl border-slate-300 pl-11 pr-4 py-3 text-sm shadow-sm transition hover:border-slate-400 focus:border-blue-600 focus:ring-blue-600 text-slate-900 font-medium">
                     </div>
                     <div class="flex gap-2">
                         <button type="submit" class="min-h-[48px] bg-blue-800 hover:bg-blue-900 text-white font-bold px-6 rounded-xl text-sm transition-colors shadow-sm focus:ring-4 focus:ring-blue-200">Cari</button>
@@ -55,7 +55,7 @@
                         <thead class="bg-slate-100 border-b border-slate-200 text-xs font-bold uppercase tracking-wide">
                             <tr>
                                 <th class="px-6 py-4 w-16 text-center text-slate-500">No</th>
-                                <th class="px-6 py-4 text-slate-700">Nama PK/Pengawas</th>
+                                <th class="px-6 py-4 text-slate-700">Nama PK</th>
                                 <th class="px-6 py-4 text-slate-700">Nomor Induk (NRP/NIP)</th>
                                 <th class="px-6 py-4 text-center text-slate-700">Jumlah Klien Diawasi</th>
                             </tr>
@@ -108,8 +108,8 @@
                         <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"></path></svg>
                     </span>
                     <div>
-                        <h3 class="font-bold text-lg sm:text-xl text-white">Hubungkan Klien dengan PK/Pengawas</h3>
-                        <p class="text-indigo-200 text-sm mt-1">Pilih PK pembimbing di kotak 1, lalu centang klien di kotak 2.</p>
+                        <h3 class="font-bold text-lg sm:text-xl text-white">Hubungkan Klien dengan PK/Pembimbing</h3>
+                        <p class="text-indigo-200 text-sm mt-1">Pilih PK/Pembimbing di kotak 1, lalu centang Klien di kotak 2.</p>
                     </div>
                 </div>
 
@@ -121,10 +121,10 @@
                         <div class="bg-slate-50 p-5 sm:p-6 rounded-2xl border border-slate-200 h-fit">
                             <label class="text-base font-extrabold text-slate-800 mb-4 flex items-center gap-3">
                                 <span class="bg-indigo-600 text-white w-7 h-7 rounded-full flex items-center justify-center text-xs shadow-sm">1</span>
-                                Tentukan PK/Pengawas
+                                Tentukan PK/Pembimbing
                             </label>
 
-                            <p class="text-sm text-slate-600 mb-4">Pilih PK yang akan menjadi pengawas untuk klien-klien yang akan Anda centang nanti.</p>
+                            <p class="text-sm text-slate-600 mb-4">Pilih PK yang akan menjadi pembimbing untuk klien-klien yang akan Anda centang nanti.</p>
 
                             <select name="pk_id" required class="block w-full rounded-xl border-slate-300 bg-white py-3.5 px-4 text-base font-bold text-indigo-900 shadow-sm transition hover:border-indigo-400 focus:border-indigo-600 focus:ring-indigo-600 cursor-pointer">
                                 <option value="" disabled selected>-- Klik di sini untuk memilih PK --</option>

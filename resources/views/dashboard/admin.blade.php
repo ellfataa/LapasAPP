@@ -70,7 +70,7 @@
                                 <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                             </div>
                             <div>
-                                <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-0.5">Total Klien Sudah Bekerja</p>
+                                <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-0.5">Klien Sudah Bekerja</p>
                                 <div class="flex items-baseline gap-2">
                                     <p class="text-2xl font-extrabold text-slate-800">{{ $klienBekerja }} <span class="text-xs font-semibold text-slate-400">Klien</span></p>
                                     <span class="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded shadow-sm border border-emerald-200" title="Persentase Klien Bekerja">{{ $persenBekerja }}</span>
@@ -84,7 +84,7 @@
                                 <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             </div>
                             <div>
-                                <p class="text-[10px] font-bold text-red-600 uppercase tracking-widest mb-0.5">Total Klien Belum Bekerja</p>
+                                <p class="text-[10px] font-bold text-red-600 uppercase tracking-widest mb-0.5">Klien Belum Bekerja</p>
                                 <p class="text-2xl font-extrabold text-slate-800">{{ $klienBelumBekerja }} <span class="text-xs font-semibold text-slate-400">Klien</span></p>
                             </div>
                         </div>
@@ -151,7 +151,7 @@
                                 <thead>
                                     <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 text-xs uppercase tracking-wider">
                                         <th class="px-5 py-3 font-bold w-32">Tgl Simpan</th>
-                                        <th class="px-5 py-3 font-bold">Nama PK/Pengawas</th>
+                                        <th class="px-5 py-3 font-bold">Nama PK</th>
                                         <th class="px-5 py-3 font-bold w-40">Periode Laporan</th>
                                         <th class="px-5 py-3 text-center font-bold w-32">Skor Akhir</th>
                                         <th class="px-5 py-3 text-right font-bold w-32">Predikat</th>

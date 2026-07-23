@@ -14,7 +14,7 @@
                     </svg>
                 </div>
                 <h2 class="font-bold text-xl sm:text-2xl md:text-3xl text-slate-900 leading-tight tracking-tight">
-                    Edit Data PK/Pengawas
+                    Edit Data PK/Pembimbing
                 </h2>
             </div>
 
